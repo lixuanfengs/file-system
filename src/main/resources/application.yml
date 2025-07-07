@@ -24,7 +24,7 @@ spring:
   # MyBatis Configuration
   mybatis:
     mapper-locations: classpath:org/mybatis/mapper/*.xml
-    type-aliases-package: net.qiyuesuo.entity
+    type-aliases-package: net.cactus.pojo
     configuration:
       map-underscore-to-camel-case: true
       cache-enabled: true

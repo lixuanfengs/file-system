@@ -12,17 +12,17 @@ public class FileMetaServiceImpl implements FileMetaService {
     @Autowired
     private FileMetaDao fileMetaDao;
 
-    @Override // net.qiyuesuo.service.FileMetaService
+    @Override
     public int saveInfo(FileMeta fileMeta) {
         return this.fileMetaDao.insert(fileMeta);
     }
 
-    @Override // net.qiyuesuo.service.FileMetaService
+    @Override
     public int deleteInfo(String fileKey) {
         return this.fileMetaDao.delete(fileKey);
     }
 
-    @Override // net.qiyuesuo.service.FileMetaService
+    @Override
     public FileMeta getInfo(String fileKey) {
         return this.fileMetaDao.getByKey(fileKey);
     }

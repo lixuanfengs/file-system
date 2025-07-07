@@ -37,7 +37,7 @@ public class StorageServiceImpl extends AbstractService implements StorageServic
     @Autowired
     private Config CONFIG;
 
-    @Override // net.qiyuesuo.service.StorageService
+    @Override
     public FileMeta storageFile(InputStream input, long size) {
         String fileKey = RandomUtils.getRandomFileKey();
         Path path = null;
@@ -59,13 +59,13 @@ public class StorageServiceImpl extends AbstractService implements StorageServic
         }
     }
 
-    @Override // net.qiyuesuo.service.StorageService
+    @Override
     public FileMeta storageFile(byte[] bytes) {
         ByteArrayInputStream input = new ByteArrayInputStream(bytes);
         return storageFile(input, bytes.length);
     }
 
-    @Override // net.qiyuesuo.service.StorageService
+    @Override
     public FileMeta storageFile(Path path) {
         try (InputStream input = new FileInputStream(path.toFile())) {
             return storageFile(input, path.toFile().length());
@@ -75,7 +75,7 @@ public class StorageServiceImpl extends AbstractService implements StorageServic
         }
     }
 
-    @Override // net.qiyuesuo.service.StorageService
+    @Override
     public Path getFileByKey(String fileKey) {
         String firstDirString = this.CONFIG.FILESTORE + "/" + fileKey.substring(0, 2);
         String secondDirString = firstDirString + "/" + fileKey.substring(2, 4);
@@ -101,7 +101,7 @@ public class StorageServiceImpl extends AbstractService implements StorageServic
         return path;
     }
 
-    @Override // net.qiyuesuo.service.StorageService
+    @Override
     public void deleteFile(String uuid) {
         Path path = Paths.get(this.CONFIG.FILESTORE + "/" + uuid.substring(0, 2) + "/" + uuid.substring(2, 4) + "/" + uuid);
         try {
@@ -112,7 +112,7 @@ public class StorageServiceImpl extends AbstractService implements StorageServic
         this.logger.info("storageService文件存储：删除uuid为：" + uuid + "的文件");
     }
 
-    @Override // net.qiyuesuo.service.StorageService
+    @Override
     public FileMeta storageFile(MultipartFile file) {
         String fileKey = RandomUtils.getRandomFileKey();
         String filename = file.getOriginalFilename();
@@ -152,7 +152,7 @@ public class StorageServiceImpl extends AbstractService implements StorageServic
         return new FileMeta(fileKey, filename, path.toFile().getAbsolutePath(), Long.valueOf(file.getSize()), subfix, new Date());
     }
 
-    @Override // net.qiyuesuo.service.StorageService
+    @Override
     public ResultMessage viewFile(FileMeta fileInfo, HttpServletResponse response, String type) throws Exception {
         if (fileInfo == null) {
             return ResultMessage.newErrorMessage("文件不存在！");

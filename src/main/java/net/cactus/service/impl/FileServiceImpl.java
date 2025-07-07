@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
-/* loaded from: fileserver-0.0.1-SNAPSHOT.jar:BOOT-INF/classes/net/qiyuesuo/service/impl/FileServiceImpl.class */
+
 public class FileServiceImpl extends AbstractService implements FileService {
 
     @Autowired

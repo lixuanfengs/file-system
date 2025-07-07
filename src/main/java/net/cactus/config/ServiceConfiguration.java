@@ -12,7 +12,6 @@ import org.springframework.context.annotation.ImportResource;
 
 @ImportResource({"classpath:spring-mybatis.xml"})
 @Configuration
-/* loaded from: fileserver-0.0.1-SNAPSHOT.jar:BOOT-INF/classes/net/qiyuesuo/config/ServiceConfiguration.class */
 public class ServiceConfiguration {
     @Bean
     public FileMetaService fileMetaService() {

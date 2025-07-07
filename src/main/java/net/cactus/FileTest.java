@@ -2,7 +2,7 @@ package net.cactus;
 
 import java.io.IOException;
 
-/* loaded from: fileserver-0.0.1-SNAPSHOT.jar:BOOT-INF/classes/net/qiyuesuo/FileTest.class */
+
 public class FileTest {
     public static void main(String[] args) throws IOException {
         testUploadFile();

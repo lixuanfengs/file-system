@@ -2,7 +2,7 @@ package net.cactus.pojo;
 
 import java.util.Date;
 
-/* loaded from: fileserver-0.0.1-SNAPSHOT.jar:BOOT-INF/classes/net/qiyuesuo/pojo/FileMeta.class */
+
 public class FileMeta {
     private String id;
     private String filename;

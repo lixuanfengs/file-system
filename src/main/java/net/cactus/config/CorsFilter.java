@@ -12,7 +12,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
 @Component
-/* loaded from: fileserver-0.0.1-SNAPSHOT.jar:BOOT-INF/classes/net/qiyuesuo/config/CorsFilter.class */
 public class CorsFilter implements Filter {
     @Override // jakarta.servlet.Filter
     public void init(FilterConfig filterConfig) throws ServletException {

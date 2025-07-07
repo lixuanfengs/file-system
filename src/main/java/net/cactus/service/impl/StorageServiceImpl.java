@@ -30,7 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
-/* loaded from: fileserver-0.0.1-SNAPSHOT.jar:BOOT-INF/classes/net/qiyuesuo/service/impl/StorageServiceImpl.class */
+
 public class StorageServiceImpl extends AbstractService implements StorageService {
     String[] fileTypes = {".pdf", ".jpg", ".jpeg", ".png", ".gif", ".doc", ".docx", ".xlsx", ".xls"};
 

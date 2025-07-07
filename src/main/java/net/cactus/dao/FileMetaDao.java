@@ -6,7 +6,7 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
-/* loaded from: fileserver-0.0.1-SNAPSHOT.jar:BOOT-INF/classes/net/qiyuesuo/dao/FileMetaDao.class */
+
 public interface FileMetaDao {
     @Select({"select * from T_SYSTEM_FILE where id = #{uuid}"})
     FileMeta getByKey(String key);

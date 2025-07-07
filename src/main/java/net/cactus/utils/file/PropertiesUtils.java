@@ -3,7 +3,7 @@ package net.cactus.utils.file;
 import java.io.IOException;
 import java.util.Properties;
 
-/* loaded from: fileserver-0.0.1-SNAPSHOT.jar:BOOT-INF/classes/net/qiyuesuo/utils/file/PropertiesUtils.class */
+
 public class PropertiesUtils {
     public static String getDataBaseProperty(String key) throws Exception {
         Properties prop = new Properties();

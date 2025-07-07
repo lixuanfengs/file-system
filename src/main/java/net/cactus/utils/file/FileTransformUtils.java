@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-/* loaded from: fileserver-0.0.1-SNAPSHOT.jar:BOOT-INF/classes/net/qiyuesuo/utils/file/FileTransformUtils.class */
+
 public class FileTransformUtils {
     public static byte[] InputToBytes(InputStream input) throws IOException {
         byte[] bytes = null;

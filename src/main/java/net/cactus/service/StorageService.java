@@ -7,7 +7,7 @@ import net.cactus.pojo.FileMeta;
 import net.cactus.utils.ResultMessage;
 import org.springframework.web.multipart.MultipartFile;
 
-/* loaded from: fileserver-0.0.1-SNAPSHOT.jar:BOOT-INF/classes/net/qiyuesuo/service/StorageService.class */
+
 public interface StorageService {
     FileMeta storageFile(InputStream input, long size);
 

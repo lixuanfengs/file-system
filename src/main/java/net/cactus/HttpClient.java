@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.support.WebContentGenerator;
 
-/* loaded from: fileserver-0.0.1-SNAPSHOT.jar:BOOT-INF/classes/net/qiyuesuo/HttpClient.class */
+
 public class HttpClient {
     private static Logger logger = LoggerFactory.getLogger((Class<?>) HttpClient.class);
 

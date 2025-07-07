@@ -25,7 +25,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RequestMapping({"/file"})
 @RestController
-/* loaded from: fileserver-0.0.1-SNAPSHOT.jar:BOOT-INF/classes/net/qiyuesuo/controller/FileController.class */
 public class FileController {
 
     @Autowired

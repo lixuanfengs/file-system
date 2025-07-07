@@ -7,6 +7,5 @@ import org.springframework.context.annotation.Import;
 @Configuration
 @ComponentScan(basePackages = {"net.cactus"})
 @Import({MvcConfiguration.class, ServiceConfiguration.class})
-/* loaded from: fileserver-0.0.1-SNAPSHOT.jar:BOOT-INF/classes/net/qiyuesuo/config/AppConfiguration.class */
 public class AppConfiguration {
 }

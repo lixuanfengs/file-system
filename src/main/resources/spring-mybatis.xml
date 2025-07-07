@@ -27,12 +27,12 @@
     <!-- MyBatis SqlSessionFactory -->
     <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
         <property name="dataSource" ref="dataSource" />
-        <property name="typeAliasesPackage" value="net.qiyuesuo.pojo" />
+        <property name="typeAliasesPackage" value="net.cactus.pojo" />
     </bean>
 
     <!-- MyBatis Mapper扫描 -->
     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-        <property name="basePackage" value="net.qiyuesuo.dao" />
+        <property name="basePackage" value="net.cactus.dao" />
         <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
     </bean>
 

@@ -9,12 +9,23 @@
   <packaging>jar</packaging>
 
   <name>fileserver</name>
+  <description>FileServer - A Spring Boot 3.x file management application</description>
   <url>http://maven.apache.org</url>
+
+  <properties>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <java.version>17</java.version>
+    <!-- 监控相关 -->
+    <skywalking.version>8.12.0</skywalking.version>
+  </properties>
 
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.0.4.RELEASE</version>
+    <version>3.3.1</version>
+    <relativePath/>
   </parent>
 
   <dependencies>
@@ -22,35 +33,60 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-tomcat</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <!-- Jetty Server -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-jetty</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-jdbc</artifactId>
     </dependency>
 
-    <!-- MyBatis -->
-    <dependency>
-      <groupId>org.mybatis</groupId>
-      <artifactId>mybatis-spring</artifactId>
-      <version>1.3.2</version>
-    </dependency>
+    <!-- MyBatis Spring Boot 3.x compatible -->
     <dependency>
       <groupId>org.mybatis.spring.boot</groupId>
       <artifactId>mybatis-spring-boot-starter</artifactId>
-      <version>1.1.1</version>
+      <version>3.0.3</version>
+    </dependency>
+
+
+    <dependency>
+      <groupId>org.apache.skywalking</groupId>
+      <artifactId>apm-toolkit-trace</artifactId>
+      <version>${skywalking.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-webmvc</artifactId>
+      <groupId>org.apache.skywalking</groupId>
+      <artifactId>apm-toolkit-logback-1.x</artifactId>
+      <version>${skywalking.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-servlet</artifactId>
+      <groupId>org.apache.skywalking</groupId>
+      <artifactId>apm-toolkit-opentracing</artifactId>
+      <version>${skywalking.version}</version>
+      <!--                <exclusions>-->
+      <!--                    <exclusion>-->
+      <!--                        <artifactId>opentracing-api</artifactId>-->
+      <!--                        <groupId>io.opentracing</groupId>-->
+      <!--                    </exclusion>-->
+      <!--                    <exclusion>-->
+      <!--                        <artifactId>opentracing-util</artifactId>-->
+      <!--                        <groupId>io.opentracing</groupId>-->
+      <!--                    </exclusion>-->
+      <!--                </exclusions>-->
     </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-server</artifactId>
-    </dependency>
+
+
+    <!-- Jackson JSON processing -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
@@ -59,112 +95,101 @@
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
     </dependency>
-    <!-- 单元测试 -->
+    <!-- Spring Boot Test Starter (includes JUnit 5) -->
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
-    <!-- logback 依赖 -->
+
+    <!-- Logging is included in Spring Boot Starter -->
+    <!-- Database Drivers -->
     <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
+      <groupId>com.mysql</groupId>
+      <artifactId>mysql-connector-j</artifactId>
     </dependency>
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-    </dependency>
-    <!-- JDBC依赖 -->
-    <dependency>
-      <groupId>com.github.noraui</groupId>
-      <artifactId>ojdbc8</artifactId>
-      <version>12.2.0.1</version>
-    </dependency>
-    <!-- <dependency> <groupId>com.microsoft.sqlserver</groupId> <artifactId>sqljdbc4</artifactId>
-        <version>4.0</version> </dependency> -->
-    <!-- 数据库连接池 -->
-    <dependency>
-      <groupId>com.zaxxer</groupId>
-      <artifactId>HikariCP</artifactId>
-      <scope>compile</scope>
-    </dependency>
+
+    <!-- HikariCP is included in Spring Boot JDBC Starter -->
+
+    <!-- Utility Libraries -->
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.7</version>
+      <version>3.14.0</version>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.6</version>
+      <version>2.16.1</version>
     </dependency>
+
+    <!-- Image Processing -->
     <dependency>
       <groupId>net.coobird</groupId>
       <artifactId>thumbnailator</artifactId>
-      <version>0.4.8</version>
+      <version>0.4.20</version>
     </dependency>
+
+    <!-- Office Document Processing -->
     <dependency>
       <groupId>org.apache.poi</groupId>
       <artifactId>poi-ooxml</artifactId>
-      <version>3.17</version>
+      <version>5.2.5</version>
       <scope>compile</scope>
       <optional>true</optional>
     </dependency>
-    <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
-    <dependency>
-      <groupId>com.mysql</groupId>
-      <artifactId>mysql-connector-j</artifactId>
-      <version>8.0.33</version>
-    </dependency>
+
+    <!-- Hutool Utilities -->
     <dependency>
       <groupId>cn.hutool</groupId>
       <artifactId>hutool-poi</artifactId>
-      <version>4.1.9</version>
+      <version>5.8.29</version>
     </dependency>
   </dependencies>
-  <!-- 配置JDK 版本 -->
   <build>
     <plugins>
+      <!-- Maven Compiler Plugin for Java 17 -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
         <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-          <encoding>utf-8</encoding>
-        </configuration>
-      </plugin>
-      <!-- exec-maven-plugin -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>1.5.0</version>
-        <configuration>
-          <mainClass>net.qiyuesuo.FileServerApplication</mainClass>
+          <source>17</source>
+          <target>17</target>
+          <encoding>UTF-8</encoding>
         </configuration>
       </plugin>
 
-      <!-- springBoot方式打包 add by liuchuan -->
+      <!-- Exec Maven Plugin -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.3.0</version>
+        <configuration>
+          <mainClass>net.cactus.FileServerApplication</mainClass>
+          <options>
+            <option>--add-opens</option>
+            <option>java.base/java.lang=ALL-UNNAMED</option>
+            <option>--add-opens</option>
+            <option>java.base/java.util=ALL-UNNAMED</option>
+          </options>
+        </configuration>
+      </plugin>
+
+      <!-- Spring Boot Maven Plugin -->
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <configuration>
-          <!-- 指定start-class -->
-          <mainClass>net.qiyuesuo.FileServerApplication</mainClass>
+          <mainClass>net.cactus.FileServerApplication</mainClass>
+          <jvmArguments>
+            --add-opens java.base/java.lang=ALL-UNNAMED
+            --add-opens java.base/java.util=ALL-UNNAMED
+          </jvmArguments>
         </configuration>
         <executions>
           <execution>
             <goals>
-              <!-- 当运行完package命令后，会执行spring-boot-maven-plugin插件自定义的 repackage命令，
-                  将当前打包出来的jxgs_internet_search，一起合并打包为一个可运行jar -->
               <goal>repackage</goal>
             </goals>
           </execution>

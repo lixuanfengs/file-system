@@ -1,0 +1,33 @@
+package net.qiyuesuo.service;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import javax.servlet.http.HttpServletResponse;
+import net.qiyuesuo.pojo.FileMeta;
+import net.qiyuesuo.utils.ResultMessage;
+import org.springframework.web.multipart.MultipartFile;
+
+/* loaded from: fileserver-0.0.1-SNAPSHOT.jar:BOOT-INF/classes/net/qiyuesuo/service/FileService.class */
+public interface FileService {
+    String saveFile(byte[] bytes);
+
+    String saveFile(InputStream input, long size);
+
+    String saveFile(File file);
+
+    byte[] getFileThrougnBytes(String fileKey) throws IOException;
+
+    void getFileThrouthStream(String fileKey, OutputStream output) throws Exception;
+
+    FileMeta getFileInfo(String fileKey) throws Exception;
+
+    int deleteFile(String fileKey);
+
+    String saveFile(MultipartFile file);
+
+    int deleteFile(FileMeta filemeta);
+
+    ResultMessage viewFile(String fileKey, String type, HttpServletResponse response) throws Exception;
+}

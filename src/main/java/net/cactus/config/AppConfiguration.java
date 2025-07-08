@@ -6,6 +6,6 @@ import org.springframework.context.annotation.Import;
 
 @Configuration
 @ComponentScan(basePackages = {"net.cactus"})
-@Import({MvcConfiguration.class, ServiceConfiguration.class})
+@Import({MvcConfiguration.class, MyBatisConfiguration.class})
 public class AppConfiguration {
 }

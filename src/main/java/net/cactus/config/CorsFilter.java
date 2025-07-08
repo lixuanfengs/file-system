@@ -11,13 +11,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component("customCorsFilter")
 public class CorsFilter implements Filter {
-    @Override // jakarta.servlet.Filter
+    @Override 
     public void init(FilterConfig filterConfig) throws ServletException {
     }
 
-    @Override // jakarta.servlet.Filter
+    @Override 
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws ServletException, IOException {
         HttpServletResponse response = (HttpServletResponse) servletResponse;
         response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
@@ -28,7 +28,7 @@ public class CorsFilter implements Filter {
         filterChain.doFilter(servletRequest, servletResponse);
     }
 
-    @Override // jakarta.servlet.Filter
+    @Override 
     public void destroy() {
     }
 }

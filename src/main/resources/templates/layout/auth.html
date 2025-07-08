@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    
+    <!-- 页面标题 -->
+    <title layout:title-pattern="$CONTENT_TITLE">FileServer</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="FileServer - 安全可靠的文件管理系统">
+    <meta name="keywords" content="文件管理,文件上传,文件下载,文件服务器">
+    <meta name="author" content="FileServer Team">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 自定义样式 -->
+    <style>
+        /* 自定义渐变背景 */
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        /* 自定义动画 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        /* 输入框聚焦效果 */
+        .input-focus:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        /* 按钮悬停效果 */
+        .btn-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+    
+    <!-- 页面特定样式 -->
+    <th:block layout:fragment="head"></th:block>
+</head>
+
+<body class="bg-gray-50 font-sans antialiased">
+    <!-- 主要内容区域 -->
+    <main class="min-h-screen">
+        <div layout:fragment="content">
+            <!-- 页面内容将在这里渲染 -->
+        </div>
+    </main>
+    
+    <!-- 页面特定脚本 -->
+    <th:block layout:fragment="scripts"></th:block>
+    
+    <!-- 通用脚本 -->
+    <script>
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 添加淡入动画
+            const elements = document.querySelectorAll('.fade-in-up');
+            elements.forEach((el, index) => {
+                setTimeout(() => {
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+            
+            // 自动聚焦到第一个输入框
+            const firstInput = document.querySelector('input[type="text"], input[type="email"]');
+            if (firstInput) {
+                firstInput.focus();
+            }
+            
+            // 表单验证增强
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>登录中...';
+                        
+                        // 5秒后重新启用按钮（防止网络问题导致按钮永久禁用）
+                        setTimeout(() => {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = '登录';
+                        }, 5000);
+                    }
+                });
+            });
+        });
+        
+        // 错误消息自动隐藏
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.bg-red-50, .bg-green-50');
+            alerts.forEach(alert => {
+                alert.style.transition = 'opacity 0.5s ease-out';
+                alert.style.opacity = '0';
+                setTimeout(() => {
+                    alert.remove();
+                }, 500);
+            });
+        }, 5000);
+    </script>
+</body>
+</html>

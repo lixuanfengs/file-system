@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FileServer 测试页面</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#64748b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        error: '#ef4444',
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .drag-over {
+            border-color: #3b82f6 !important;
+            background-color: #eff6ff !important;
+        }
+        .progress-bar {
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen py-8">
+    <div class="max-w-7xl mx-auto px-6">
+        <!-- 页面标题区域 -->
+        <div class="text-center mb-12 animate-fade-in">
+            <h1 class="text-6xl font-bold text-gray-800 mb-6 flex items-center justify-center">
+                🚀 <span class="ml-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">FileServer 功能测试</span>
+            </h1>
+            <div class="bg-white rounded-xl shadow-md p-6 max-w-2xl mx-auto">
+                <p class="text-gray-700 text-xl mb-3" th:text="${serverInfo}">FileServer v1.0</p>
+                <div class="text-sm text-gray-600">
+                    服务地址: <span class="font-mono bg-blue-50 text-blue-700 px-3 py-1 rounded-lg border" th:text="${baseUrl}">http://localhost:9101</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主要功能区域 -->
+        <div class="space-y-12">
+            <!-- 服务状态检查区域 -->
+            <div class="bg-white rounded-2xl shadow-lg p-8 animate-slide-up border border-gray-100">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-6 flex items-center justify-center">
+                        <span class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                            <span class="text-2xl">💚</span>
+                        </span>
+                        服务状态检查
+                    </h2>
+                    <button onclick="checkHealth()"
+                            class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg">
+                        <span class="flex items-center">
+                            <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            检查服务状态
+                        </span>
+                    </button>
+                    <div id="healthResult" class="mt-6 p-4 rounded-xl min-h-[60px] transition-all duration-300"></div>
+                </div>
+            </div>
+
+            <!-- 文件上传区域 -->
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                <!-- 单文件上传 -->
+                <div class="bg-white rounded-2xl shadow-lg p-8 animate-slide-up border border-gray-100">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                        <span class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                            <span class="text-xl">📁</span>
+                        </span>
+                        单文件上传
+                    </h2>
+                    <div class="space-y-6">
+                        <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-blue-400 hover:bg-blue-50 transition-all duration-300"
+                             id="singleDropZone"
+                             ondrop="handleDrop(event, 'single')"
+                             ondragover="handleDragOver(event)"
+                             ondragleave="handleDragLeave(event)">
+                            <input type="file" id="fileInput" accept="*/*" class="hidden" onchange="handleFileSelect(this, 'single')">
+                            <div class="text-gray-500">
+                                <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                </svg>
+                                <p class="text-lg font-medium mb-2">拖拽文件到此处</p>
+                                <p class="text-sm mb-4">或者</p>
+                                <button onclick="document.getElementById('fileInput').click()"
+                                        class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-colors duration-200">
+                                    点击选择文件
+                                </button>
+                                <p class="text-xs mt-3 text-gray-400">支持所有文件类型</p>
+                            </div>
+                        </div>
+
+                        <div id="singleFileInfo" class="hidden bg-blue-50 p-4 rounded-xl border border-blue-200"></div>
+
+                        <div id="singleProgress" class="hidden">
+                            <div class="bg-gray-200 rounded-full h-3 mb-2">
+                                <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full progress-bar transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                            <p class="text-sm text-gray-600 text-center">上传中...</p>
+                        </div>
+
+                        <div class="flex space-x-4">
+                            <button onclick="uploadFile()"
+                                    class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg">
+                                <span class="flex items-center justify-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 12l2 2 4-4"></path>
+                                    </svg>
+                                    上传文件
+                                </span>
+                            </button>
+                            <button onclick="clearSingleFile()"
+                                    class="bg-gray-400 hover:bg-gray-500 text-white font-medium py-3 px-6 rounded-xl transition-all duration-200">
+                                清除
+                            </button>
+                        </div>
+                    </div>
+                    <div id="uploadResult" class="mt-6 p-4 rounded-xl min-h-[60px] transition-all duration-300"></div>
+                </div>
+
+                <!-- 多文件上传 -->
+                <div class="bg-white rounded-2xl shadow-lg p-8 animate-slide-up border border-gray-100">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                        <span class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center mr-4">
+                            <span class="text-xl">📚</span>
+                        </span>
+                        多文件上传
+                    </h2>
+                    <div class="space-y-6">
+                        <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-orange-400 hover:bg-orange-50 transition-all duration-300"
+                             id="multiDropZone"
+                             ondrop="handleDrop(event, 'multi')"
+                             ondragover="handleDragOver(event)"
+                             ondragleave="handleDragLeave(event)">
+                            <input type="file" id="multiFileInput" multiple accept="*/*" class="hidden" onchange="handleFileSelect(this, 'multi')">
+                            <div class="text-gray-500">
+                                <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <p class="text-lg font-medium mb-2">拖拽多个文件到此处</p>
+                                <p class="text-sm mb-4">或者</p>
+                                <button onclick="document.getElementById('multiFileInput').click()"
+                                        class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg transition-colors duration-200">
+                                    点击选择多个文件
+                                </button>
+                                <p class="text-xs mt-3 text-gray-400">支持同时选择多个文件</p>
+                            </div>
+                        </div>
+
+                        <div id="multiFileInfo" class="hidden bg-orange-50 p-4 rounded-xl border border-orange-200 max-h-40 overflow-y-auto"></div>
+
+                        <div id="multiProgress" class="hidden">
+                            <div class="bg-gray-200 rounded-full h-3 mb-2">
+                                <div class="bg-gradient-to-r from-orange-500 to-orange-600 h-3 rounded-full progress-bar transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                            <p class="text-sm text-gray-600 text-center">上传中...</p>
+                        </div>
+
+                        <div class="flex space-x-4">
+                            <button onclick="uploadMultipleFiles()"
+                                    class="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg">
+                                <span class="flex items-center justify-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 12l2 2 4-4"></path>
+                                    </svg>
+                                    上传多个文件
+                                </span>
+                            </button>
+                            <button onclick="clearMultiFiles()"
+                                    class="bg-gray-400 hover:bg-gray-500 text-white font-medium py-3 px-6 rounded-xl transition-all duration-200">
+                                清除
+                            </button>
+                        </div>
+                    </div>
+                    <div id="multiUploadResult" class="mt-6 p-4 rounded-xl min-h-[60px] transition-all duration-300"></div>
+                </div>
+            </div>
+
+            <!-- 文件操作区域 -->
+            <div class="bg-white rounded-2xl shadow-lg p-8 animate-slide-up border border-gray-100">
+                <h2 class="text-3xl font-bold text-gray-800 mb-8 flex items-center justify-center">
+                    <span class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mr-4">
+                        <span class="text-2xl">🔧</span>
+                    </span>
+                    文件操作管理
+                </h2>
+
+                <div class="space-y-8">
+                    <!-- 文件Key输入区域 -->
+                    <div class="bg-gray-50 p-6 rounded-xl">
+                        <label class="block text-sm font-medium text-gray-700 mb-3">文件Key</label>
+                        <div class="relative">
+                            <input type="text" id="fileKeyInput" placeholder="请输入文件Key (从上传结果中获取)"
+                                   class="w-full p-4 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 pr-12 text-sm font-mono">
+                            <button onclick="clearFileKey()" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 操作按钮区域 -->
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <button onclick="getFileInfo()"
+                                class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-4 px-4 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg">
+                            <span class="flex flex-col items-center">
+                                <svg class="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="text-sm">获取信息</span>
+                            </span>
+                        </button>
+                        <button onclick="downloadFile()"
+                                class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-4 px-4 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg">
+                            <span class="flex flex-col items-center">
+                                <svg class="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <span class="text-sm">下载文件</span>
+                            </span>
+                        </button>
+                        <button onclick="previewFile()"
+                                class="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white font-semibold py-4 px-4 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg">
+                            <span class="flex flex-col items-center">
+                                <svg class="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                                <span class="text-sm">预览文件</span>
+                            </span>
+                        </button>
+                        <button onclick="deleteFile()"
+                                class="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-4 px-4 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg">
+                            <span class="flex flex-col items-center">
+                                <svg class="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                                <span class="text-sm">删除文件</span>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="operationResult" class="mt-8 p-4 rounded-xl min-h-[60px] transition-all duration-300"></div>
+            </div>
+
+            <!-- 文件历史记录区域 -->
+            <div class="bg-white rounded-2xl shadow-lg p-8 animate-slide-up border border-gray-100">
+                <div class="flex items-center justify-between mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800 flex items-center">
+                        <span class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mr-4">
+                            <span class="text-2xl">📋</span>
+                        </span>
+                        操作历史记录
+                    </h2>
+                    <button onclick="clearHistory()"
+                            class="bg-gray-500 hover:bg-gray-600 text-white font-medium px-6 py-3 rounded-xl transition-all duration-200 transform hover:scale-105">
+                        <span class="flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                            清空记录
+                        </span>
+                    </button>
+                </div>
+
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <div id="fileHistory" class="space-y-3 max-h-80 overflow-y-auto">
+                        <div class="text-center py-12">
+                            <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-3-3v6m-3-9.75h.008v.008H12V2.25z"></path>
+                            </svg>
+                            <p class="text-gray-500 text-lg">暂无操作记录</p>
+                            <p class="text-gray-400 text-sm mt-2">上传或操作文件后，历史记录将显示在这里</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 页脚信息 -->
+        <div class="mt-16 text-center text-gray-500 text-sm">
+            <div class="bg-white rounded-xl shadow-md p-6 max-w-2xl mx-auto">
+                <p class="mb-2">© 2025 FileServer - 基于 Spring Boot 3.x + JDK 17 + Jetty 构建</p>
+                <p class="text-xs">支持文件上传、下载、预览、删除等完整功能</p>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const baseUrl = /*[[${baseUrl}]]*/ 'http://localhost:9101';
+        /*]]>*/
+
+        let fileHistory = JSON.parse(localStorage.getItem('fileHistory') || '[]');
+
+        // 页面加载时的初始化
+        window.onload = function() {
+            checkHealth();
+            loadFileHistory();
+        };
+
+        // 拖拽处理函数
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.currentTarget.classList.add('drag-over');
+        }
+
+        function handleDragLeave(event) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleDrop(event, type) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('drag-over');
+
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                if (type === 'single') {
+                    document.getElementById('fileInput').files = files;
+                    handleFileSelect(document.getElementById('fileInput'), 'single');
+                } else {
+                    document.getElementById('multiFileInput').files = files;
+                    handleFileSelect(document.getElementById('multiFileInput'), 'multi');
+                }
+            }
+        }
+
+        // 文件选择处理
+        function handleFileSelect(input, type) {
+            const files = input.files;
+            if (files.length === 0) return;
+
+            if (type === 'single') {
+                const file = files[0];
+                const infoDiv = document.getElementById('singleFileInfo');
+                infoDiv.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div class="flex-shrink-0">
+                            <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-900">${file.name}</p>
+                            <p class="text-sm text-gray-500">${formatFileSize(file.size)}</p>
+                        </div>
+                    </div>
+                `;
+                infoDiv.classList.remove('hidden');
+            } else {
+                const infoDiv = document.getElementById('multiFileInfo');
+                let html = '<div class="space-y-2">';
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    html += `
+                        <div class="flex items-center space-x-3 p-2 bg-white rounded border">
+                            <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-900 text-sm">${file.name}</p>
+                                <p class="text-xs text-gray-500">${formatFileSize(file.size)}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+                html += '</div>';
+                infoDiv.innerHTML = html;
+                infoDiv.classList.remove('hidden');
+            }
+        }
+
+        // 清除文件选择
+        function clearSingleFile() {
+            document.getElementById('fileInput').value = '';
+            document.getElementById('singleFileInfo').classList.add('hidden');
+            document.getElementById('singleProgress').classList.add('hidden');
+        }
+
+        function clearMultiFiles() {
+            document.getElementById('multiFileInput').value = '';
+            document.getElementById('multiFileInfo').classList.add('hidden');
+            document.getElementById('multiProgress').classList.add('hidden');
+        }
+
+        function clearFileKey() {
+            document.getElementById('fileKeyInput').value = '';
+        }
+
+        // 格式化文件大小
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // 显示进度条
+        function showProgress(type, show = true) {
+            const progressDiv = document.getElementById(type + 'Progress');
+            if (show) {
+                progressDiv.classList.remove('hidden');
+                updateProgress(type, 0);
+            } else {
+                progressDiv.classList.add('hidden');
+            }
+        }
+
+        function updateProgress(type, percent) {
+            const progressBar = document.querySelector(`#${type}Progress .progress-bar`);
+            progressBar.style.width = percent + '%';
+        }
+
+        // 添加到历史记录
+        function addToHistory(fileKey, fileName, operation) {
+            const historyItem = {
+                fileKey: fileKey,
+                fileName: fileName || 'Unknown',
+                operation: operation,
+                timestamp: new Date().toLocaleString('zh-CN')
+            };
+
+            fileHistory.unshift(historyItem);
+            if (fileHistory.length > 20) {
+                fileHistory = fileHistory.slice(0, 20);
+            }
+
+            localStorage.setItem('fileHistory', JSON.stringify(fileHistory));
+            loadFileHistory();
+        }
+
+        // 加载历史记录
+        function loadFileHistory() {
+            const historyDiv = document.getElementById('fileHistory');
+            if (fileHistory.length === 0) {
+                historyDiv.innerHTML = '<p class="text-gray-500 text-center py-4">暂无文件记录</p>';
+                return;
+            }
+
+            let html = '';
+            fileHistory.forEach((item, index) => {
+                const operationColor = {
+                    '上传': 'text-green-600 bg-green-100',
+                    '下载': 'text-blue-600 bg-blue-100',
+                    '预览': 'text-yellow-600 bg-yellow-100',
+                    '删除': 'text-red-600 bg-red-100',
+                    '获取信息': 'text-purple-600 bg-purple-100'
+                };
+
+                html += `
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2">
+                                <span class="px-2 py-1 text-xs rounded-full ${operationColor[item.operation] || 'text-gray-600 bg-gray-100'}">${item.operation}</span>
+                                <span class="font-medium text-sm text-gray-900">${item.fileName}</span>
+                            </div>
+                            <div class="flex items-center space-x-2 mt-1">
+                                <span class="text-xs text-gray-500">${item.timestamp}</span>
+                                <span class="text-xs text-gray-400 font-mono">${item.fileKey.substring(0, 8)}...</span>
+                            </div>
+                        </div>
+                        <button onclick="useFileKey('${item.fileKey}')" class="text-primary hover:text-blue-600 text-sm">
+                            使用
+                        </button>
+                    </div>
+                `;
+            });
+
+            historyDiv.innerHTML = html;
+        }
+
+        // 使用历史记录中的文件Key
+        function useFileKey(fileKey) {
+            document.getElementById('fileKeyInput').value = fileKey;
+        }
+
+        // 清空历史记录
+        function clearHistory() {
+            if (confirm('确定要清空所有历史记录吗？')) {
+                fileHistory = [];
+                localStorage.removeItem('fileHistory');
+                loadFileHistory();
+            }
+        }
+
+        // 健康检查
+        async function checkHealth() {
+            const resultDiv = document.getElementById('healthResult');
+            try {
+                resultDiv.className = 'bg-blue-100 border border-blue-400 text-blue-700 p-3 rounded-lg animate-pulse';
+                resultDiv.innerHTML = '🔄 正在检查服务状态...';
+
+                const response = await fetch(`${baseUrl}/health`);
+                const data = await response.json();
+
+                resultDiv.className = 'bg-green-100 border border-green-400 text-green-700 p-3 rounded-lg animate-fade-in';
+                resultDiv.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <div class="font-semibold">✅ 服务状态正常</div>
+                            <div class="text-sm mt-1">响应码: ${data.code} | 消息: ${data.message}</div>
+                            <div class="text-sm">结果: ${data.result}</div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.className = 'bg-red-100 border border-red-400 text-red-700 p-3 rounded-lg animate-fade-in';
+                resultDiv.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <div class="font-semibold">❌ 服务连接失败</div>
+                            <div class="text-sm mt-1">错误信息: ${error.message}</div>
+                            <div class="text-sm">请检查服务是否正常运行</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // 单文件上传
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const resultDiv = document.getElementById('uploadResult');
+
+            if (!fileInput.files[0]) {
+                resultDiv.className = 'bg-red-100 border border-red-400 text-red-700 p-3 rounded-lg animate-fade-in';
+                resultDiv.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="font-semibold">❌ 请选择文件</span>
+                    </div>
+                `;
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            const fileName = fileInput.files[0].name;
+
+            try {
+                showProgress('single', true);
+                resultDiv.className = 'bg-blue-100 border border-blue-400 text-blue-700 p-3 rounded-lg animate-pulse';
+                resultDiv.innerHTML = '🔄 正在上传文件...';
+
+                // 模拟进度更新
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += Math.random() * 30;
+                    if (progress > 90) progress = 90;
+                    updateProgress('single', progress);
+                }, 200);
+
+                const response = await fetch(`${baseUrl}/file/uploadOne`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                clearInterval(progressInterval);
+                updateProgress('single', 100);
+
+                if (data.success) {
+                    resultDiv.className = 'bg-green-100 border border-green-400 text-green-700 p-3 rounded-lg animate-fade-in';
+                    resultDiv.innerHTML = `
+                        <div class="space-y-2">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="font-semibold">✅ 上传成功!</span>
+                            </div>
+                            <div class="bg-white p-3 rounded border">
+                                <div class="text-sm text-gray-600">文件Key:</div>
+                                <div class="font-mono bg-gray-100 px-2 py-1 rounded text-sm break-all">${data.result}</div>
+                                <button onclick="copyToClipboard('${data.result}')" class="mt-2 text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 transition-colors">
+                                    复制Key
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    addToHistory(data.result, fileName, '上传');
+
+                    setTimeout(() => showProgress('single', false), 1000);
+                } else {
+                    showProgress('single', false);
+                    resultDiv.className = 'bg-red-100 border border-red-400 text-red-700 p-3 rounded-lg animate-fade-in';
+                    resultDiv.innerHTML = `
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div>
+                                <div class="font-semibold">❌ 上传失败</div>
+                                <div class="text-sm mt-1">错误信息: ${data.message}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                showProgress('single', false);
+                resultDiv.className = 'bg-red-100 border border-red-400 text-red-700 p-3 rounded-lg animate-fade-in';
+                resultDiv.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <div class="font-semibold">❌ 上传失败</div>
+                            <div class="text-sm mt-1">网络错误: ${error.message}</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // 复制到剪贴板
+        async function copyToClipboard(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+                // 显示复制成功提示
+                const toast = document.createElement('div');
+                toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-fade-in';
+                toast.textContent = '已复制到剪贴板';
+                document.body.appendChild(toast);
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 2000);
+            } catch (err) {
+                console.error('复制失败:', err);
+            }
+        }
+
+        // 多文件上传
+        async function uploadMultipleFiles() {
+            const fileInput = document.getElementById('multiFileInput');
+            const resultDiv = document.getElementById('multiUploadResult');
+
+            if (!fileInput.files.length) {
+                resultDiv.className = 'bg-red-100 border border-red-400 text-red-700 p-3 rounded-lg animate-fade-in';
+                resultDiv.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="font-semibold">❌ 请选择文件</span>
+                    </div>
+                `;
+                return;
+            }
+
+            const formData = new FormData();
+            const fileNames = [];
+            for (let file of fileInput.files) {
+                formData.append('files', file);
+                fileNames.push(file.name);
+            }
+
+            try {
+                showProgress('multi', true);
+                resultDiv.className = 'bg-blue-100 border border-blue-400 text-blue-700 p-3 rounded-lg animate-pulse';
+                resultDiv.innerHTML = `🔄 正在上传 ${fileInput.files.length} 个文件...`;
+
+                // 模拟进度更新
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += Math.random() * 20;
+                    if (progress > 90) progress = 90;
+                    updateProgress('multi', progress);
+                }, 300);
+
+                const response = await fetch(`${baseUrl}/file/uploadFileMore`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                clearInterval(progressInterval);
+                updateProgress('multi', 100);
+
+                if (data.success) {
+                    const fileKeys = data.result.split(',');
+                    resultDiv.className = 'bg-green-100 border border-green-400 text-green-700 p-3 rounded-lg animate-fade-in';
+
+                    let keysHtml = '';
+                    fileKeys.forEach((key, index) => {
+                        keysHtml += `
+                            <div class="bg-white p-2 rounded border mb-2">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <div class="text-sm font-medium">${fileNames[index] || 'Unknown'}</div>
+                                        <div class="font-mono text-xs text-gray-600">${key}</div>
+                                    </div>
+                                    <button onclick="copyToClipboard('${key}')" class="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 transition-colors">
+                                        复制
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        addToHistory(key, fileNames[index] || 'Unknown', '上传');
+                    });
+
+                    resultDiv.innerHTML = `
+                        <div class="space-y-2">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="font-semibold">✅ 上传成功! (${fileKeys.length} 个文件)</span>
+                            </div>
+                            <div class="max-h-40 overflow-y-auto">
+                                ${keysHtml}
+                            </div>
+                        </div>
+                    `;
+
+                    setTimeout(() => showProgress('multi', false), 1000);
+                } else {
+                    showProgress('multi', false);
+                    resultDiv.className = 'bg-red-100 border border-red-400 text-red-700 p-3 rounded-lg animate-fade-in';
+                    resultDiv.innerHTML = `
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div>
+                                <div class="font-semibold">❌ 上传失败</div>
+                                <div class="text-sm mt-1">错误信息: ${data.message}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                showProgress('multi', false);
+                resultDiv.className = 'bg-red-100 border border-red-400 text-red-700 p-3 rounded-lg animate-fade-in';
+                resultDiv.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <div class="font-semibold">❌ 上传失败</div>
+                            <div class="text-sm mt-1">网络错误: ${error.message}</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // 获取文件信息
+        async function getFileInfo() {
+            const fileKey = document.getElementById('fileKeyInput').value.trim();
+            const resultDiv = document.getElementById('operationResult');
+
+            if (!fileKey) {
+                resultDiv.className = 'bg-red-100 border border-red-400 text-red-700 p-3 rounded-lg animate-fade-in';
+                resultDiv.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="font-semibold">❌ 请输入文件Key</span>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                resultDiv.className = 'bg-blue-100 border border-blue-400 text-blue-700 p-3 rounded-lg animate-pulse';
+                resultDiv.innerHTML = '🔄 正在获取文件信息...';
+
+                const response = await fetch(`${baseUrl}/file/getInfo?fileKey=${encodeURIComponent(fileKey)}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const info = data.result;
+                    resultDiv.className = 'bg-green-100 border border-green-400 text-green-700 p-3 rounded-lg animate-fade-in';
+                    resultDiv.innerHTML = `
+                        <div class="space-y-3">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="font-semibold">✅ 文件信息获取成功</span>
+                            </div>
+                            <div class="bg-white p-4 rounded border space-y-2">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                                    <div><span class="font-semibold text-gray-700">UUID:</span> <span class="font-mono text-gray-600">${info.uuid}</span></div>
+                                    <div><span class="font-semibold text-gray-700">文件名:</span> <span class="text-gray-600">${info.fileName}</span></div>
+                                    <div><span class="font-semibold text-gray-700">大小:</span> <span class="text-gray-600">${formatFileSize(info.size)}</span></div>
+                                    <div><span class="font-semibold text-gray-700">类型:</span> <span class="text-gray-600">${info.contentType}</span></div>
+                                    <div><span class="font-semibold text-gray-700">后缀:</span> <span class="text-gray-600">${info.subfix}</span></div>
+                                    <div><span class="font-semibold text-gray-700">创建时间:</span> <span class="text-gray-600">${info.createTime}</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    addToHistory(fileKey, info.fileName, '获取信息');
+                } else {
+                    resultDiv.className = 'bg-red-100 border border-red-400 text-red-700 p-3 rounded-lg animate-fade-in';
+                    resultDiv.innerHTML = `
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div>
+                                <div class="font-semibold">❌ 获取失败</div>
+                                <div class="text-sm mt-1">错误信息: ${data.message}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.className = 'bg-red-100 border border-red-400 text-red-700 p-3 rounded-lg animate-fade-in';
+                resultDiv.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <div class="font-semibold">❌ 获取失败</div>
+                            <div class="text-sm mt-1">网络错误: ${error.message}</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // 下载文件
+        function downloadFile() {
+            const fileKey = document.getElementById('fileKeyInput').value.trim();
+            const resultDiv = document.getElementById('operationResult');
+
+            if (!fileKey) {
+                resultDiv.className = 'bg-red-100 border border-red-400 text-red-700 p-3 rounded-lg animate-fade-in';
+                resultDiv.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="font-semibold">❌ 请输入文件Key</span>
+                    </div>
+                `;
+                return;
+            }
+
+            resultDiv.className = 'bg-blue-100 border border-blue-400 text-blue-700 p-3 rounded-lg animate-fade-in';
+            resultDiv.innerHTML = `
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    <span>📥 正在准备下载...</span>
+                </div>
+            `;
+
+            try {
+                window.open(`${baseUrl}/file/${encodeURIComponent(fileKey)}`, '_blank');
+                addToHistory(fileKey, 'Unknown', '下载');
+
+                setTimeout(() => {
+                    resultDiv.className = 'bg-green-100 border border-green-400 text-green-700 p-3 rounded-lg animate-fade-in';
+                    resultDiv.innerHTML = `
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span class="font-semibold">✅ 下载已开始</span>
+                        </div>
+                    `;
+                }, 1000);
+            } catch (error) {
+                resultDiv.className = 'bg-red-100 border border-red-400 text-red-700 p-3 rounded-lg animate-fade-in';
+                resultDiv.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <div class="font-semibold">❌ 下载失败</div>
+                            <div class="text-sm mt-1">错误信息: ${error.message}</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // 预览文件
+        function previewFile() {
+            const fileKey = document.getElementById('fileKeyInput').value.trim();
+            const resultDiv = document.getElementById('operationResult');
+
+            if (!fileKey) {
+                resultDiv.className = 'bg-red-100 border border-red-400 text-red-700 p-3 rounded-lg animate-fade-in';
+                resultDiv.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="font-semibold">❌ 请输入文件Key</span>
+                    </div>
+                `;
+                return;
+            }
+
+            resultDiv.className = 'bg-blue-100 border border-blue-400 text-blue-700 p-3 rounded-lg animate-fade-in';
+            resultDiv.innerHTML = `
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 mr-2 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                    <span>👁️ 正在打开预览...</span>
+                </div>
+            `;
+
+            try {
+                window.open(`${baseUrl}/file/viewFile/${encodeURIComponent(fileKey)}`, '_blank');
+                addToHistory(fileKey, 'Unknown', '预览');
+
+                setTimeout(() => {
+                    resultDiv.className = 'bg-green-100 border border-green-400 text-green-700 p-3 rounded-lg animate-fade-in';
+                    resultDiv.innerHTML = `
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span class="font-semibold">✅ 预览已打开</span>
+                        </div>
+                    `;
+                }, 1000);
+            } catch (error) {
+                resultDiv.className = 'bg-red-100 border border-red-400 text-red-700 p-3 rounded-lg animate-fade-in';
+                resultDiv.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <div class="font-semibold">❌ 预览失败</div>
+                            <div class="text-sm mt-1">错误信息: ${error.message}</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // 删除文件
+        async function deleteFile() {
+            const fileKey = document.getElementById('fileKeyInput').value.trim();
+            const resultDiv = document.getElementById('operationResult');
+
+            if (!fileKey) {
+                resultDiv.className = 'bg-red-100 border border-red-400 text-red-700 p-3 rounded-lg animate-fade-in';
+                resultDiv.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="font-semibold">❌ 请输入文件Key</span>
+                    </div>
+                `;
+                return;
+            }
+
+            if (!confirm('⚠️ 确定要删除这个文件吗？\n\n此操作不可撤销！')) {
+                return;
+            }
+
+            try {
+                resultDiv.className = 'bg-yellow-100 border border-yellow-400 text-yellow-700 p-3 rounded-lg animate-pulse';
+                resultDiv.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        <span>🗑️ 正在删除文件...</span>
+                    </div>
+                `;
+
+                const formData = new FormData();
+                formData.append('fileKey', fileKey);
+
+                const response = await fetch(`${baseUrl}/file/delete`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    resultDiv.className = 'bg-green-100 border border-green-400 text-green-700 p-3 rounded-lg animate-fade-in';
+                    resultDiv.innerHTML = `
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div>
+                                <div class="font-semibold">✅ 删除成功!</div>
+                                <div class="text-sm mt-1">文件已从服务器中移除</div>
+                            </div>
+                        </div>
+                    `;
+                    addToHistory(fileKey, 'Unknown', '删除');
+
+                    // 清空输入框
+                    document.getElementById('fileKeyInput').value = '';
+                } else {
+                    resultDiv.className = 'bg-red-100 border border-red-400 text-red-700 p-3 rounded-lg animate-fade-in';
+                    resultDiv.innerHTML = `
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div>
+                                <div class="font-semibold">❌ 删除失败</div>
+                                <div class="text-sm mt-1">错误信息: ${data.message}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.className = 'bg-red-100 border border-red-400 text-red-700 p-3 rounded-lg animate-fade-in';
+                resultDiv.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <div class="font-semibold">❌ 删除失败</div>
+                            <div class="text-sm mt-1">网络错误: ${error.message}</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

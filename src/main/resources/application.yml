@@ -67,6 +67,16 @@ spring:
     deserialization:
       fail-on-unknown-properties: false
 
+  # Thymeleaf Configuration
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: false
+    servlet:
+      content-type: text/html
+
 # Server Configuration
 server:
   port: 9101
@@ -82,6 +92,12 @@ server:
       idle-timeout: 60000ms
     accesslog:
       enabled: false
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    net.cactus: DEBUG
 
 cactus:
   info:

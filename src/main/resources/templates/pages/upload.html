@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN" 
+      xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+
+<head>
+    <title layout:fragment="title">文件上传</title>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <!-- 页面标题 -->
+            <div class="text-center mb-12 animate-fade-in">
+                <h1 class="text-5xl font-bold text-gray-800 mb-6 flex items-center justify-center">
+                    📁 <span class="ml-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">文件上传中心</span>
+                </h1>
+                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                    支持单文件和多文件上传，拖拽操作，实时进度显示
+                </p>
+            </div>
+
+            <!-- 主要功能区域 -->
+            <div class="space-y-12">
+                <!-- 服务状态检查区域 -->
+                <div class="bg-white rounded-2xl shadow-lg p-8 animate-slide-up border border-gray-100">
+                    <div class="text-center">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-6 flex items-center justify-center">
+                            <span class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                                <span class="text-2xl">💚</span>
+                            </span>
+                            服务状态检查
+                        </h2>
+                        <button onclick="checkHealth()"
+                                class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg">
+                            <span class="flex items-center">
+                                <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                检查服务状态
+                            </span>
+                        </button>
+                        <div id="healthResult" class="mt-6 p-4 rounded-xl min-h-[60px] transition-all duration-300"></div>
+                    </div>
+                </div>
+
+                <!-- 文件上传区域 -->
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                    <!-- 单文件上传 -->
+                    <div class="bg-white rounded-2xl shadow-lg p-8 animate-slide-up border border-gray-100">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                            <span class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                                <span class="text-xl">📄</span>
+                            </span>
+                            单文件上传
+                        </h2>
+                        <div class="space-y-6">
+                            <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-blue-400 hover:bg-blue-50 transition-all duration-300"
+                                 id="singleDropZone"
+                                 ondrop="handleDrop(event, 'single')" 
+                                 ondragover="handleDragOver(event)" 
+                                 ondragleave="handleDragLeave(event)">
+                                <input type="file" id="fileInput" accept="*/*" class="hidden" onchange="handleFileSelect(this, 'single')">
+                                <div class="text-gray-500">
+                                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                    </svg>
+                                    <p class="text-lg font-medium mb-2">拖拽文件到此处</p>
+                                    <p class="text-sm mb-4">或者</p>
+                                    <button onclick="document.getElementById('fileInput').click()" 
+                                            class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-colors duration-200">
+                                        点击选择文件
+                                    </button>
+                                    <p class="text-xs mt-3 text-gray-400">支持所有文件类型</p>
+                                </div>
+                            </div>
+                            
+                            <div id="singleFileInfo" class="hidden bg-blue-50 p-4 rounded-xl border border-blue-200"></div>
+                            
+                            <div id="singleProgress" class="hidden">
+                                <div class="bg-gray-200 rounded-full h-3 mb-2">
+                                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full progress-bar transition-all duration-300" style="width: 0%"></div>
+                                </div>
+                                <p class="text-sm text-gray-600 text-center">上传中...</p>
+                            </div>
+                            
+                            <div class="flex space-x-4">
+                                <button onclick="uploadFile()"
+                                        class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg">
+                                    <span class="flex items-center justify-center">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 12l2 2 4-4"></path>
+                                        </svg>
+                                        上传文件
+                                    </span>
+                                </button>
+                                <button onclick="clearSingleFile()"
+                                        class="bg-gray-400 hover:bg-gray-500 text-white font-medium py-3 px-6 rounded-xl transition-all duration-200">
+                                    清除
+                                </button>
+                            </div>
+                        </div>
+                        <div id="uploadResult" class="mt-6 p-4 rounded-xl min-h-[60px] transition-all duration-300"></div>
+                    </div>
+
+                    <!-- 多文件上传 -->
+                    <div class="bg-white rounded-2xl shadow-lg p-8 animate-slide-up border border-gray-100">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                            <span class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center mr-4">
+                                <span class="text-xl">📚</span>
+                            </span>
+                            多文件上传
+                        </h2>
+                        <div class="space-y-6">
+                            <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-orange-400 hover:bg-orange-50 transition-all duration-300"
+                                 id="multiDropZone"
+                                 ondrop="handleDrop(event, 'multi')" 
+                                 ondragover="handleDragOver(event)" 
+                                 ondragleave="handleDragLeave(event)">
+                                <input type="file" id="multiFileInput" multiple accept="*/*" class="hidden" onchange="handleFileSelect(this, 'multi')">
+                                <div class="text-gray-500">
+                                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    <p class="text-lg font-medium mb-2">拖拽多个文件到此处</p>
+                                    <p class="text-sm mb-4">或者</p>
+                                    <button onclick="document.getElementById('multiFileInput').click()" 
+                                            class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg transition-colors duration-200">
+                                        点击选择多个文件
+                                    </button>
+                                    <p class="text-xs mt-3 text-gray-400">支持同时选择多个文件</p>
+                                </div>
+                            </div>
+                            
+                            <div id="multiFileInfo" class="hidden bg-orange-50 p-4 rounded-xl border border-orange-200 max-h-40 overflow-y-auto"></div>
+                            
+                            <div id="multiProgress" class="hidden">
+                                <div class="bg-gray-200 rounded-full h-3 mb-2">
+                                    <div class="bg-gradient-to-r from-orange-500 to-orange-600 h-3 rounded-full progress-bar transition-all duration-300" style="width: 0%"></div>
+                                </div>
+                                <p class="text-sm text-gray-600 text-center">上传中...</p>
+                            </div>
+                            
+                            <div class="flex space-x-4">
+                                <button onclick="uploadMultipleFiles()"
+                                        class="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg">
+                                    <span class="flex items-center justify-center">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 12l2 2 4-4"></path>
+                                        </svg>
+                                        上传多个文件
+                                    </span>
+                                </button>
+                                <button onclick="clearMultiFiles()"
+                                        class="bg-gray-400 hover:bg-gray-500 text-white font-medium py-3 px-6 rounded-xl transition-all duration-200">
+                                    清除
+                                </button>
+                            </div>
+                        </div>
+                        <div id="multiUploadResult" class="mt-6 p-4 rounded-xl min-h-[60px] transition-all duration-300"></div>
+                    </div>
+                </div>
+
+                <!-- 快速操作区域 -->
+                <div class="bg-white rounded-2xl shadow-lg p-8 animate-slide-up border border-gray-100">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center justify-center">
+                        <span class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-4">
+                            <span class="text-xl">⚡</span>
+                        </span>
+                        快速操作
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <a th:href="@{/page/file-list}" 
+                           class="group bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 p-6 rounded-xl transition-all duration-200 transform hover:scale-105 border border-blue-200">
+                            <div class="text-center">
+                                <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-600 transition-colors duration-200">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-semibold text-gray-800 mb-2">查看文件列表</h3>
+                                <p class="text-sm text-gray-600">浏览所有已上传的文件</p>
+                            </div>
+                        </a>
+                        
+                        <a th:href="@{/page/file-manage}" 
+                           class="group bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 p-6 rounded-xl transition-all duration-200 transform hover:scale-105 border border-green-200">
+                            <div class="text-center">
+                                <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-green-600 transition-colors duration-200">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-semibold text-gray-800 mb-2">文件管理</h3>
+                                <p class="text-sm text-gray-600">管理和操作文件</p>
+                            </div>
+                        </a>
+                        
+                        <a th:href="@{/page/system-status}" 
+                           class="group bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 p-6 rounded-xl transition-all duration-200 transform hover:scale-105 border border-purple-200">
+                            <div class="text-center">
+                                <div class="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-purple-600 transition-colors duration-200">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 00-2 2z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-semibold text-gray-800 mb-2">系统状态</h3>
+                                <p class="text-sm text-gray-600">查看系统运行状态</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script layout:fragment="scripts" th:src="@{/js/upload.js}"></script>
+</body>
+</html>

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN" 
+      xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+
+<head>
+    <title layout:fragment="title">文件列表</title>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <!-- 页面标题 -->
+            <div class="text-center mb-12 animate-fade-in">
+                <h1 class="text-5xl font-bold text-gray-800 mb-6 flex items-center justify-center">
+                    📋 <span class="ml-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">文件列表管理</span>
+                </h1>
+                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                    浏览、搜索和管理所有已上传的文件
+                </p>
+            </div>
+
+            <!-- 搜索和操作区域 -->
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 animate-slide-up border border-gray-100">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                    <!-- 搜索框 -->
+                    <div class="flex-1 lg:mr-6">
+                        <form th:action="@{/page/file-list}" method="get" class="flex">
+                            <div class="relative flex-1">
+                                <input type="text" 
+                                       name="keyword" 
+                                       th:value="${keyword}"
+                                       placeholder="搜索文件名..." 
+                                       class="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-l-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+                                <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                            <button type="submit" 
+                                    class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-3 rounded-r-xl transition-all duration-200 transform hover:scale-105 shadow-lg">
+                                <span class="flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                    搜索
+                                </span>
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- 操作按钮 -->
+                    <div class="flex space-x-3">
+                        <a th:href="@{/page/file-list}" 
+                           class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg">
+                            <span class="flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                </svg>
+                                重置
+                            </span>
+                        </a>
+                        <button onclick="refreshList()" 
+                                class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg">
+                            <span class="flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                </svg>
+                                刷新
+                            </span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 搜索结果提示 -->
+                <div th:if="${hasKeyword}" class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="text-blue-700">
+                            搜索关键词: "<span class="font-semibold" th:text="${keyword}"></span>" 
+                            - 找到 <span class="font-semibold" th:text="${totalCount}">0</span> 个结果
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 文件列表区域 -->
+            <div class="bg-white rounded-2xl shadow-lg animate-slide-up border border-gray-100">
+                <!-- 列表头部 -->
+                <div class="px-8 py-6 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                            <span class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                <span class="text-blue-600">📁</span>
+                            </span>
+                            文件列表
+                        </h2>
+                        <div class="text-sm text-gray-500">
+                            共 <span class="font-semibold text-gray-700" th:text="${totalCount}">0</span> 个文件
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 文件列表内容 -->
+                <div class="p-8">
+                    <div th:if="${#lists.isEmpty(files)}" class="text-center py-16">
+                        <svg class="w-24 h-24 mx-auto text-gray-300 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-3-3v6m-3-9.75h.008v.008H12V2.25z"></path>
+                        </svg>
+                        <h3 class="text-xl font-semibold text-gray-600 mb-2">暂无文件</h3>
+                        <p class="text-gray-500 mb-6">
+                            <span th:if="${hasKeyword}">没有找到匹配的文件，请尝试其他关键词</span>
+                            <span th:unless="${hasKeyword}">还没有上传任何文件</span>
+                        </p>
+                        <a th:href="@{/page/}" 
+                           class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-3 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg">
+                            <span class="flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                </svg>
+                                去上传文件
+                            </span>
+                        </a>
+                    </div>
+
+                    <!-- 文件表格 -->
+                    <div th:unless="${#lists.isEmpty(files)}" class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="text-left py-4 px-4 font-semibold text-gray-700">文件信息</th>
+                                    <th class="text-left py-4 px-4 font-semibold text-gray-700">大小</th>
+                                    <th class="text-left py-4 px-4 font-semibold text-gray-700">类型</th>
+                                    <th class="text-left py-4 px-4 font-semibold text-gray-700">上传时间</th>
+                                    <th class="text-center py-4 px-4 font-semibold text-gray-700">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="file : ${files}" class="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200">
+                                    <td class="py-4 px-4">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="flex-shrink-0">
+                                                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="font-medium text-gray-900 truncate" th:text="${file.filename}">文件名</p>
+                                                <p class="text-sm text-gray-500 font-mono truncate" th:text="${file.uuid}">文件ID</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-4 text-sm text-gray-600" th:text="${#numbers.formatInteger(file.filesize, 0, 'COMMA')} + ' B'">大小</td>
+                                    <td class="py-4 px-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800" th:text="${file.subfix}">类型</span>
+                                    </td>
+                                    <td class="py-4 px-4 text-sm text-gray-600" th:text="${file.createtime}">时间</td>
+                                    <td class="py-4 px-4">
+                                        <div class="flex items-center justify-center space-x-2">
+                                            <button th:data-file-key="${file.uuid}"
+                                                    onclick="downloadFile(this.dataset.fileKey)"
+                                                    class="text-green-600 hover:text-green-800 p-2 hover:bg-green-50 rounded-lg transition-colors duration-200"
+                                                    title="下载">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                </svg>
+                                            </button>
+                                            <button th:data-file-key="${file.uuid}"
+                                                    onclick="previewFile(this.dataset.fileKey)"
+                                                    class="text-blue-600 hover:text-blue-800 p-2 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                                                    title="预览">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                </svg>
+                                            </button>
+                                            <button th:data-file-key="${file.uuid}"
+                                                    onclick="copyFileKey(this.dataset.fileKey)"
+                                                    class="text-purple-600 hover:text-purple-800 p-2 hover:bg-purple-50 rounded-lg transition-colors duration-200"
+                                                    title="复制Key">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                                </svg>
+                                            </button>
+                                            <button th:data-file-key="${file.uuid}"
+                                                    th:data-file-name="${file.filename}"
+                                                    onclick="deleteFile(this.dataset.fileKey, this.dataset.fileName)"
+                                                    class="text-red-600 hover:text-red-800 p-2 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                                                    title="删除">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 分页区域 -->
+                <div th:if="${totalPages > 1}" class="px-8 py-6 border-t border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div class="text-sm text-gray-500">
+                            显示第 <span class="font-semibold" th:text="${(currentPage - 1) * pageSize + 1}">1</span> 
+                            到 <span class="font-semibold" th:text="${currentPage * pageSize > totalCount ? totalCount : currentPage * pageSize}">10</span> 
+                            条，共 <span class="font-semibold" th:text="${totalCount}">0</span> 条记录
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                            <!-- 上一页 -->
+                            <a th:if="${currentPage > 1}" 
+                               th:href="@{/page/file-list(page=${currentPage - 1}, size=${pageSize}, keyword=${keyword})}"
+                               class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                                上一页
+                            </a>
+                            
+                            <!-- 页码 -->
+                            <span th:each="page : ${#numbers.sequence(1, totalPages)}" th:if="${page <= 10 or (page >= currentPage - 2 and page <= currentPage + 2) or page > totalPages - 3}">
+                                <a th:if="${page != currentPage}" 
+                                   th:href="@{/page/file-list(page=${page}, size=${pageSize}, keyword=${keyword})}"
+                                   th:text="${page}"
+                                   class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                                </a>
+                                <span th:if="${page == currentPage}" 
+                                      th:text="${page}"
+                                      class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-lg">
+                                </span>
+                            </span>
+                            
+                            <!-- 下一页 -->
+                            <a th:if="${currentPage < totalPages}" 
+                               th:href="@{/page/file-list(page=${currentPage + 1}, size=${pageSize}, keyword=${keyword})}"
+                               class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                                下一页
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script layout:fragment="scripts" th:src="@{/js/file-list.js}"></script>
+</body>
+</html>

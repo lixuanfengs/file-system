@@ -6,6 +6,8 @@ import net.cactus.service.FileMetaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class FileMetaServiceImpl implements FileMetaService {
 
@@ -25,5 +27,27 @@ public class FileMetaServiceImpl implements FileMetaService {
     @Override
     public FileMeta getInfo(String fileKey) {
         return this.fileMetaDao.getByKey(fileKey);
+    }
+
+    @Override
+    public List<FileMeta> findByPage(int page, int size) {
+        int offset = (page - 1) * size;
+        return this.fileMetaDao.findByPage(offset, size);
+    }
+
+    @Override
+    public int getTotalCount() {
+        return this.fileMetaDao.count();
+    }
+
+    @Override
+    public List<FileMeta> searchByPage(String keyword, int page, int size) {
+        int offset = (page - 1) * size;
+        return this.fileMetaDao.searchByPage(keyword, offset, size);
+    }
+
+    @Override
+    public int getSearchCount(String keyword) {
+        return this.fileMetaDao.countByKeyword(keyword);
     }
 }

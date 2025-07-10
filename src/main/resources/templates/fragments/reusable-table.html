@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!-- 表格组件样式 -->
+    <link rel="stylesheet" th:href="@{/css/dynamic-table.css}">
+</head>
+<body>
+
+<!--
+  通用动态表格组件
+  参数说明:
+  - tableId: 表格唯一标识
+  - tableTitle: 表格标题
+  - pageData: 分页数据对象
+  - columns: 列定义数组
+  - actionBaseUrl: 操作基础URL
+  - showBatchActions: 是否显示批量操作 (可选，默认true)
+  - showColumnSettings: 是否显示列设置 (可选，默认true)
+-->
+<div th:fragment="dynamicTable(tableId, tableTitle, pageData, columns, actionBaseUrl, showBatchActions, showColumnSettings)"
+     th:with="data=${pageData.list},
+              totalPages=${pageData.pages},
+              totalCount=${pageData.total},
+              currentPage=${pageData.pageNum},
+              pageSize=${pageData.pageSize},
+              enableBatch=${showBatchActions != null ? showBatchActions : true},
+              enableColumnSettings=${showColumnSettings != null ? showColumnSettings : true}">
+
+    <!-- 列设置模态框 -->
+    <div th:if="${enableColumnSettings}"
+         th:id="${tableId + '-columnModal'}"
+         class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center modal-overlay">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 modal-content">
+            <div class="flex items-center justify-between p-6 border-b">
+                <h3 class="text-lg font-semibold text-gray-900">显示字段设置</h3>
+                <button th:data-action="'close-modal-' + ${tableId}" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <div class="space-y-3">
+                    <label th:each="col : ${columns}" class="flex items-center p-3 rounded-lg hover:bg-gray-50">
+                        <input type="checkbox"
+                               th:data-column="${col.key}"
+                               th:checked="${col.defaultVisible}"
+                               class="w-4 h-4 text-blue-600">
+                        <span class="ml-3 text-sm" th:text="${col.label}"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="flex items-center justify-between p-6 border-t bg-gray-50 rounded-b-lg">
+                <button th:id="${tableId + '-resetSettingsBtn'}"
+                        class="text-sm text-gray-600 hover:text-gray-800">重置</button>
+                <div class="flex space-x-3">
+                    <button th:data-action="'close-modal-' + ${tableId}"
+                            class="px-4 py-2 text-sm font-medium bg-white border rounded-lg hover:bg-gray-50">取消</button>
+                    <button th:id="${tableId + '-applySettingsBtn'}"
+                            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">应用设置</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 表格容器 -->
+    <div class="dynamic-table-container" th:id="${tableId + '-container'}" th:data-action-base-url="${actionBaseUrl}">
+
+        <!-- 表格头部 -->
+        <div class="table-header">
+            <h2 class="table-title" th:text="${tableTitle}">数据表格</h2>
+            <div class="table-controls">
+                <div th:if="${enableColumnSettings}" class="control-btn" th:id="${tableId + '-columnToggleBtn'}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 0v10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2z"></path>
+                    </svg>
+                    <span>显示字段</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 批量操作栏 -->
+        <div th:if="${enableBatch}"
+             th:id="${tableId + '-batchActions'}"
+             class="batch-actions"
+             style="display: none;">
+            <div class="batch-info">
+                已选择 <span th:id="${tableId + '-selectedCount'}">0</span> 项
+            </div>
+            <div class="batch-buttons">
+                <button th:id="${tableId + '-batchDownloadBtn'}" class="batch-btn batch-download">批量下载</button>
+                <button th:id="${tableId + '-batchDeleteBtn'}" class="batch-btn batch-delete">批量删除</button>
+            </div>
+        </div>
+
+        <!-- 空状态 -->
+        <div th:if="${#lists.isEmpty(data)}" class="empty-state">
+            <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">暂无数据</h3>
+            <p class="text-gray-500">当前没有可显示的数据</p>
+        </div>
+
+        <!-- 数据表格 -->
+        <table th:unless="${#lists.isEmpty(data)}" class="data-table" th:id="${tableId}">
+            <thead>
+                <tr>
+                    <th th:if="${enableBatch}" style="width: 50px;">
+                        <input type="checkbox" th:id="${tableId + '-selectAll'}" class="file-checkbox">
+                    </th>
+                    <th th:each="col : ${columns}"
+                        th:class="'col-' + ${col.key}"
+                        th:text="${col.label}">
+                    </th>
+                    <th style="width: 180px;">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="item : ${data}">
+                    <td th:if="${enableBatch}">
+                        <input type="checkbox"
+                               class="file-checkbox file-item-checkbox"
+                               th:value="${item.uuid}">
+                    </td>
+                    <td th:each="col : ${columns}" th:class="'col-' + ${col.key}">
+                        <div th:switch="${col.type ?: 'default'}">
+                            <!-- 文件大小格式化 -->
+                            <div th:case="'size'"
+                                 class="file-size"
+                                 th:text="${@fileServerUtils.formatFileSize(item[col.key])}">
+                            </div>
+                            <!-- 日期格式化 -->
+                            <div th:case="'date'"
+                                 class="file-date"
+                                 th:text="${item[col.key]}">
+                            </div>
+                            <!-- 标签类型 -->
+                            <span th:case="'badge'"
+                                  class="file-type"
+                                  th:text="${item[col.key] ?: 'unknown'}">
+                            </span>
+                            <!-- 默认文本 -->
+                            <div th:case="*"
+                                 class="file-name"
+                                 th:text="${item[col.key]}"
+                                 th:title="${item[col.key]}">
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <a th:href="@{${actionBaseUrl} + '/viewFile/' + ${item.uuid}}"
+                               target="_blank"
+                               class="action-btn btn-preview">预览</a>
+                            <a th:href="@{${actionBaseUrl} + '/' + ${item.uuid}}"
+                               target="_blank"
+                               class="action-btn btn-download">下载</a>
+                            <button th:data-action="'delete-file-' + ${tableId}"
+                                    th:data-uuid="${item.uuid}"
+                                    th:data-name="${item.filename}"
+                                    class="action-btn btn-delete">删除</button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

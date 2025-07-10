@@ -2,98 +2,451 @@
 
 // 页面加载时的初始化
 document.addEventListener('DOMContentLoaded', function() {
+
+    // 初始化系统状态
     initializeSystemStatus();
+
+    // 开始实时更新
     startRealTimeUpdates();
+
+    // 监听网络状态
+    window.addEventListener('online', () => updateStatusIndicator('online'));
+    window.addEventListener('offline', () => updateStatusIndicator('offline'));
 });
 
 // 初始化系统状态
 function initializeSystemStatus() {
-    updateCurrentTime();
+    loadSystemOverview();
     loadSystemInfo();
-    loadFileStatistics();
-    performHealthCheck();
+    loadMonitorData();
 }
 
 // 开始实时更新
 function startRealTimeUpdates() {
-    // 每秒更新当前时间
-    setInterval(updateCurrentTime, 1000);
-    
-    // 每30秒更新系统信息
-    setInterval(loadSystemInfo, 30000);
-    
-    // 每60秒更新文件统计
-    setInterval(loadFileStatistics, 60000);
+    // 每5秒更新系统概览
+    setInterval(loadSystemOverview, 5000);
+
+    // 每10秒更新系统信息
+    setInterval(loadSystemInfo, 10000);
+
+    // 每30秒更新完整监控数据
+    setInterval(loadMonitorData, 30000);
 }
 
-// 更新当前时间
-function updateCurrentTime() {
+
+
+// 更新最后更新时间
+function updateLastUpdateTime() {
     const now = new Date();
     const timeString = now.toLocaleString('zh-CN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit'
     });
-    document.getElementById('currentTime').textContent = timeString;
-}
-
-// 加载系统信息
-function loadSystemInfo() {
-    // 模拟系统信息（在实际项目中，这些信息应该从后端API获取）
-    const startTime = new Date(Date.now() - Math.random() * 86400000); // 随机启动时间
-    const uptime = calculateUptime(startTime);
-    
-    document.getElementById('javaVersion').textContent = 'OpenJDK 17.0.6';
-    document.getElementById('springVersion').textContent = 'Spring Boot 3.3.1';
-    document.getElementById('startTime').textContent = startTime.toLocaleString('zh-CN');
-    document.getElementById('uptime').textContent = uptime;
-}
-
-// 计算运行时间
-function calculateUptime(startTime) {
-    const now = new Date();
-    const uptimeMs = now - startTime;
-    
-    const days = Math.floor(uptimeMs / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((uptimeMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((uptimeMs % (1000 * 60 * 60)) / (1000 * 60));
-    
-    if (days > 0) {
-        return `${days}天 ${hours}小时 ${minutes}分钟`;
-    } else if (hours > 0) {
-        return `${hours}小时 ${minutes}分钟`;
-    } else {
-        return `${minutes}分钟`;
+    const lastUpdateElement = document.getElementById('lastUpdateTime');
+    if (lastUpdateElement) {
+        lastUpdateElement.textContent = timeString;
     }
 }
 
-// 加载文件统计信息
-async function loadFileStatistics() {
+// 加载系统信息
+async function loadSystemInfo() {
     try {
-        // 这里应该调用后端API获取文件统计信息
-        // 暂时使用模拟数据
-        const totalFiles = Math.floor(Math.random() * 1000) + 100;
-        const storageUsed = formatFileSize(Math.random() * 1024 * 1024 * 1024); // 随机存储使用量
-        
-        document.getElementById('totalFiles').textContent = totalFiles.toLocaleString();
-        document.getElementById('storageUsed').textContent = storageUsed;
-        
-        // 在实际项目中，可以这样调用API：
-        /*
-        const response = await fetch(`${FileServer.baseUrl}/api/statistics`);
+        const response = await fetch(`${FileServer.baseUrl}/api/system/info`);
         const data = await response.json();
-        if (data.success) {
-            document.getElementById('totalFiles').textContent = data.result.totalFiles.toLocaleString();
-            document.getElementById('storageUsed').textContent = formatFileSize(data.result.storageUsed);
+
+        if (data.code === 0 && data.result) {
+            const systemInfo = data.result;
+
+            // 更新系统信息显示
+            const startTimeElement = document.getElementById('startTime');
+            const uptimeElement = document.getElementById('uptime');
+
+            if (startTimeElement) {
+                startTimeElement.textContent = systemInfo.startTime || 'Unknown';
+            }
+            if (uptimeElement) {
+                uptimeElement.textContent = systemInfo.uptime || 'Unknown';
+            }
+
+            // 更新JVM信息
+            updateJVMInfo(systemInfo);
+        } else {
+            // 如果API调用失败，显示错误信息
+            const startTimeElement = document.getElementById('startTime');
+            const uptimeElement = document.getElementById('uptime');
+
+            if (startTimeElement) {
+                startTimeElement.textContent = 'API调用失败';
+            }
+            if (uptimeElement) {
+                uptimeElement.textContent = 'API调用失败';
+            }
+
+            // 更新JVM信息为失败状态
+            updateJVMInfo(null);
         }
-        */
     } catch (error) {
-        console.error('加载文件统计信息失败:', error);
-        document.getElementById('totalFiles').textContent = '获取失败';
-        document.getElementById('storageUsed').textContent = '获取失败';
+        console.error('加载系统信息失败:', error);
+        // 如果网络错误，显示错误信息
+        const startTimeElement = document.getElementById('startTime');
+        const uptimeElement = document.getElementById('uptime');
+
+        if (startTimeElement) {
+            startTimeElement.textContent = '网络错误';
+        }
+        if (uptimeElement) {
+            uptimeElement.textContent = '网络错误';
+        }
+
+        // 更新JVM信息为错误状态
+        updateJVMInfo(null);
+    }
+}
+
+
+
+// 加载系统概览数据
+async function loadSystemOverview() {
+    try {
+        const response = await fetch(`${FileServer.baseUrl}/api/system/overview`);
+        const data = await response.json();
+
+        if (data.code === 0 && data.result) {
+            const overview = data.result;
+
+            // 更新服务状态
+            updateServiceStatus(overview.serviceStatus || '运行中', overview.serviceStatusCode || 1, overview.uptime);
+
+            // 更新内存使用
+            updateMemoryStatus(overview.memoryUsagePercent || 0, overview.usedMemory || '0 MB', overview.totalMemory || '0 MB');
+
+            // 更新最后更新时间
+            updateLastUpdateTime();
+
+        } else {
+            console.error('获取系统概览失败:', data.message);
+        }
+    } catch (error) {
+        console.error('加载系统概览失败:', error);
+        // 设置错误状态
+        updateServiceStatus('异常', 0);
+    }
+}
+
+// 更新服务状态显示
+function updateServiceStatus(status, statusCode, uptime) {
+    const serviceStatusElement = document.getElementById('serviceStatus');
+    const statusIndicator = document.getElementById('statusIndicator');
+    const statusDot = document.getElementById('statusDot');
+    const statusIcon = document.getElementById('statusIcon');
+    const statusIconContainer = document.getElementById('statusIconContainer');
+    const statusBadge = document.getElementById('statusBadge');
+    const statusDescription = document.getElementById('statusDescription');
+    const statusRipple = document.getElementById('statusRipple');
+    const statusUptime = document.getElementById('statusUptime');
+
+    if (statusCode === 1) {
+        // 正常状态
+        if (serviceStatusElement) {
+            serviceStatusElement.textContent = status;
+            serviceStatusElement.className = 'text-xl font-bold text-green-600';
+        }
+
+        if (statusIndicator) {
+            statusIndicator.className = 'w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-lg';
+        }
+
+        if (statusDot) {
+            statusDot.textContent = '在线';
+            statusDot.className = 'text-xs text-green-500';
+        }
+
+        if (statusIcon) {
+            statusIcon.textContent = '🚀';
+            statusIcon.className = 'text-3xl animate-bounce';
+        }
+
+        if (statusIconContainer) {
+            const container = statusIconContainer.querySelector('div');
+            if (container) {
+                container.className = 'w-16 h-16 bg-gradient-to-br from-green-100 to-green-200 rounded-2xl flex items-center justify-center transform transition-all duration-300 hover:scale-105';
+            }
+        }
+
+        if (statusBadge) {
+            statusBadge.textContent = 'ONLINE';
+            statusBadge.className = 'px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full';
+        }
+
+        if (statusDescription) {
+            statusDescription.textContent = '系统运行正常，所有服务可用';
+        }
+
+        if (statusRipple) {
+            statusRipple.className = 'absolute inset-0 rounded-2xl bg-green-400 opacity-20 animate-ping';
+        }
+
+    } else {
+        // 异常状态
+        if (serviceStatusElement) {
+            serviceStatusElement.textContent = status;
+            serviceStatusElement.className = 'text-xl font-bold text-red-600';
+        }
+
+        if (statusIndicator) {
+            statusIndicator.className = 'w-3 h-3 bg-red-500 rounded-full animate-pulse shadow-lg';
+        }
+
+        if (statusDot) {
+            statusDot.textContent = '离线';
+            statusDot.className = 'text-xs text-red-500';
+        }
+
+        if (statusIcon) {
+            statusIcon.textContent = '⚠️';
+            statusIcon.className = 'text-3xl animate-pulse';
+        }
+
+        if (statusIconContainer) {
+            const container = statusIconContainer.querySelector('div');
+            if (container) {
+                container.className = 'w-16 h-16 bg-gradient-to-br from-red-100 to-red-200 rounded-2xl flex items-center justify-center transform transition-all duration-300 hover:scale-105';
+            }
+        }
+
+        if (statusBadge) {
+            statusBadge.textContent = 'OFFLINE';
+            statusBadge.className = 'px-2 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-full';
+        }
+
+        if (statusDescription) {
+            statusDescription.textContent = '系统服务异常，请检查系统状态';
+        }
+
+        if (statusRipple) {
+            statusRipple.className = 'absolute inset-0 rounded-2xl bg-red-400 opacity-20 animate-ping';
+        }
+    }
+
+    // 更新运行时间
+    if (statusUptime && uptime) {
+        statusUptime.textContent = `运行时间: ${uptime}`;
+    } else if (statusUptime) {
+        statusUptime.textContent = '运行时间: 计算中...';
+    }
+}
+
+// 更新JVM信息显示
+function updateJVMInfo(systemInfo) {
+    const springBootVersionElement = document.getElementById('springBootVersion');
+    const jvmRuntimeElement = document.getElementById('jvmRuntime');
+
+    if (systemInfo) {
+        // 更新Spring Boot版本
+        if (springBootVersionElement) {
+            springBootVersionElement.textContent = systemInfo.springBootVersion || 'Unknown';
+        }
+
+        // 更新JVM运行状态
+        if (jvmRuntimeElement) {
+            jvmRuntimeElement.textContent = '运行正常';
+            jvmRuntimeElement.className = 'font-semibold text-green-700';
+        }
+    } else {
+        // 错误状态
+        if (springBootVersionElement) {
+            springBootVersionElement.textContent = '获取失败';
+        }
+
+        if (jvmRuntimeElement) {
+            jvmRuntimeElement.textContent = '状态异常';
+            jvmRuntimeElement.className = 'font-semibold text-red-700';
+        }
+    }
+}
+
+// 更新内存状态显示
+function updateMemoryStatus(usagePercent, usedMemory, totalMemory) {
+    const memoryUsagePercentElement = document.getElementById('memoryUsagePercent');
+    const memoryIndicator = document.getElementById('memoryIndicator');
+    const memoryStatus = document.getElementById('memoryStatus');
+    const memoryIcon = document.getElementById('memoryIcon');
+    const memoryIconContainer = document.getElementById('memoryIconContainer');
+    const memoryBadge = document.getElementById('memoryBadge');
+    const memoryDescription = document.getElementById('memoryDescription');
+    const memoryRipple = document.getElementById('memoryRipple');
+    const memoryUsageDetail = document.getElementById('memoryUsageDetail');
+    const memoryProgressBar = document.getElementById('memoryProgressBar');
+
+    // 更新基本信息
+    if (memoryUsagePercentElement) {
+        memoryUsagePercentElement.textContent = usagePercent + '%';
+    }
+
+    if (memoryUsageDetail) {
+        memoryUsageDetail.textContent = `${usedMemory} / ${totalMemory}`;
+    }
+
+    if (memoryProgressBar) {
+        memoryProgressBar.style.width = usagePercent + '%';
+    }
+
+    // 根据内存使用率设置不同的状态
+    if (usagePercent < 70) {
+        // 正常状态 (< 70%)
+        if (memoryUsagePercentElement) {
+            memoryUsagePercentElement.className = 'text-xl font-bold text-green-600';
+        }
+
+        if (memoryIndicator) {
+            memoryIndicator.className = 'w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-lg';
+        }
+
+        if (memoryStatus) {
+            memoryStatus.textContent = '正常';
+            memoryStatus.className = 'text-xs text-green-500';
+        }
+
+        if (memoryIcon) {
+            memoryIcon.textContent = '🧠';
+            memoryIcon.className = 'text-3xl animate-pulse';
+        }
+
+        if (memoryIconContainer) {
+            const container = memoryIconContainer.querySelector('div');
+            if (container) {
+                container.className = 'w-16 h-16 bg-gradient-to-br from-green-100 to-green-200 rounded-2xl flex items-center justify-center transform transition-all duration-300 hover:scale-105';
+            }
+        }
+
+        if (memoryBadge) {
+            memoryBadge.textContent = 'NORMAL';
+            memoryBadge.className = 'px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full';
+        }
+
+        if (memoryDescription) {
+            memoryDescription.textContent = '内存使用正常';
+        }
+
+        if (memoryRipple) {
+            memoryRipple.className = 'absolute inset-0 rounded-2xl bg-green-400 opacity-20 animate-ping';
+        }
+
+        if (memoryProgressBar) {
+            memoryProgressBar.className = 'bg-gradient-to-r from-green-400 to-green-500 h-2 rounded-full transition-all duration-500';
+        }
+
+    } else if (usagePercent < 85) {
+        // 警告状态 (70% - 85%)
+        if (memoryUsagePercentElement) {
+            memoryUsagePercentElement.className = 'text-xl font-bold text-yellow-600';
+        }
+
+        if (memoryIndicator) {
+            memoryIndicator.className = 'w-3 h-3 bg-yellow-500 rounded-full animate-pulse shadow-lg';
+        }
+
+        if (memoryStatus) {
+            memoryStatus.textContent = '警告';
+            memoryStatus.className = 'text-xs text-yellow-500';
+        }
+
+        if (memoryIcon) {
+            memoryIcon.textContent = '⚠️';
+            memoryIcon.className = 'text-3xl animate-bounce';
+        }
+
+        if (memoryIconContainer) {
+            const container = memoryIconContainer.querySelector('div');
+            if (container) {
+                container.className = 'w-16 h-16 bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-2xl flex items-center justify-center transform transition-all duration-300 hover:scale-105';
+            }
+        }
+
+        if (memoryBadge) {
+            memoryBadge.textContent = 'WARNING';
+            memoryBadge.className = 'px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-full';
+        }
+
+        if (memoryDescription) {
+            memoryDescription.textContent = '内存使用率较高，建议关注';
+        }
+
+        if (memoryRipple) {
+            memoryRipple.className = 'absolute inset-0 rounded-2xl bg-yellow-400 opacity-20 animate-ping';
+        }
+
+        if (memoryProgressBar) {
+            memoryProgressBar.className = 'bg-gradient-to-r from-yellow-400 to-yellow-500 h-2 rounded-full transition-all duration-500';
+        }
+
+    } else {
+        // 危险状态 (>= 85%)
+        if (memoryUsagePercentElement) {
+            memoryUsagePercentElement.className = 'text-xl font-bold text-red-600';
+        }
+
+        if (memoryIndicator) {
+            memoryIndicator.className = 'w-3 h-3 bg-red-500 rounded-full animate-pulse shadow-lg';
+        }
+
+        if (memoryStatus) {
+            memoryStatus.textContent = '危险';
+            memoryStatus.className = 'text-xs text-red-500';
+        }
+
+        if (memoryIcon) {
+            memoryIcon.textContent = '🔥';
+            memoryIcon.className = 'text-3xl animate-bounce';
+        }
+
+        if (memoryIconContainer) {
+            const container = memoryIconContainer.querySelector('div');
+            if (container) {
+                container.className = 'w-16 h-16 bg-gradient-to-br from-red-100 to-red-200 rounded-2xl flex items-center justify-center transform transition-all duration-300 hover:scale-105';
+            }
+        }
+
+        if (memoryBadge) {
+            memoryBadge.textContent = 'CRITICAL';
+            memoryBadge.className = 'px-2 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-full';
+        }
+
+        if (memoryDescription) {
+            memoryDescription.textContent = '内存使用率过高，需要立即处理';
+        }
+
+        if (memoryRipple) {
+            memoryRipple.className = 'absolute inset-0 rounded-2xl bg-red-400 opacity-20 animate-ping';
+        }
+
+        if (memoryProgressBar) {
+            memoryProgressBar.className = 'bg-gradient-to-r from-red-400 to-red-500 h-2 rounded-full transition-all duration-500';
+        }
+    }
+}
+
+// 加载完整监控数据
+async function loadMonitorData() {
+    try {
+        const response = await fetch(`${FileServer.baseUrl}/api/system/monitor`);
+        const data = await response.json();
+
+        if (data.code === 0 && data.result) {
+            const monitorData = data.result;
+
+            // 更新详细的系统信息
+            console.log('监控数据更新:', monitorData);
+
+            // 可以在这里添加更多详细信息的更新
+            // 比如CPU使用率、磁盘使用率等
+
+        } else {
+            console.error('获取监控数据失败:', data.message);
+        }
+    } catch (error) {
+        console.error('加载监控数据失败:', error);
     }
 }
 
@@ -106,180 +459,37 @@ function formatFileSize(bytes) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-// 执行健康检查
-async function performHealthCheck() {
-    const resultDiv = document.getElementById('healthCheckResult');
-    try {
-        resultDiv.className = 'p-4 rounded-xl min-h-[100px] transition-all duration-300 bg-blue-100 border border-blue-400 text-blue-700 animate-pulse';
-        resultDiv.innerHTML = `
-            <div class="flex items-center justify-center">
-                <svg class="w-6 h-6 mr-3 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                </svg>
-                <span class="text-lg font-medium">正在执行健康检查...</span>
-            </div>
-        `;
-        
-        const response = await fetch(`${FileServer.baseUrl}/health`);
-        const data = await response.json();
-        
-        if (data.code === 200) {
-            resultDiv.className = 'p-4 rounded-xl min-h-[100px] transition-all duration-300 bg-green-100 border border-green-400 text-green-700 animate-fade-in';
-            resultDiv.innerHTML = `
-                <div class="space-y-3">
-                    <div class="flex items-center">
-                        <svg class="w-6 h-6 mr-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <span class="text-lg font-semibold">✅ 系统健康状态良好</span>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                        <div><strong>响应码:</strong> ${data.code}</div>
-                        <div><strong>消息:</strong> ${data.message}</div>
-                        <div><strong>结果:</strong> ${data.result}</div>
-                        <div><strong>检查时间:</strong> ${new Date().toLocaleString('zh-CN')}</div>
-                    </div>
-                </div>
-            `;
-            
-            // 更新服务状态
-            document.getElementById('serviceStatus').textContent = '运行中';
-            document.getElementById('serviceStatus').className = 'text-2xl font-bold text-green-600';
+// 更新元素文本内容的辅助函数
+function updateElementText(elementId, value) {
+    const element = document.getElementById(elementId);
+    if (element && value !== undefined && value !== null) {
+        // 添加数字动画效果
+        if (typeof value === 'number' && !isNaN(value)) {
+            animateNumber(element, parseInt(element.textContent) || 0, value);
         } else {
-            throw new Error(`健康检查失败: ${data.message}`);
+            element.textContent = value;
         }
-    } catch (error) {
-        resultDiv.className = 'p-4 rounded-xl min-h-[100px] transition-all duration-300 bg-red-100 border border-red-400 text-red-700 animate-fade-in';
-        resultDiv.innerHTML = `
-            <div class="space-y-3">
-                <div class="flex items-center">
-                    <svg class="w-6 h-6 mr-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <span class="text-lg font-semibold">❌ 健康检查失败</span>
-                </div>
-                <div class="text-sm">
-                    <div><strong>错误信息:</strong> ${error.message}</div>
-                    <div><strong>检查时间:</strong> ${new Date().toLocaleString('zh-CN')}</div>
-                    <div class="mt-2 text-red-600">请检查服务是否正常运行</div>
-                </div>
-            </div>
-        `;
-        
-        // 更新服务状态
-        document.getElementById('serviceStatus').textContent = '异常';
-        document.getElementById('serviceStatus').className = 'text-2xl font-bold text-red-600';
     }
 }
 
-// 刷新系统信息
-function refreshSystemInfo() {
-    const resultDiv = document.getElementById('operationResult');
-    
-    resultDiv.className = 'mt-6 p-4 rounded-xl min-h-[60px] transition-all duration-300 bg-blue-100 border border-blue-400 text-blue-700';
-    resultDiv.innerHTML = `
-        <div class="flex items-center">
-            <svg class="w-5 h-5 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-            </svg>
-            <span>正在刷新系统信息...</span>
-        </div>
-    `;
-    
-    setTimeout(() => {
-        loadSystemInfo();
-        loadFileStatistics();
-        
-        resultDiv.className = 'mt-6 p-4 rounded-xl min-h-[60px] transition-all duration-300 bg-green-100 border border-green-400 text-green-700';
-        resultDiv.innerHTML = `
-            <div class="flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <span>✅ 系统信息已刷新</span>
-            </div>
-        `;
-        
-        setTimeout(() => {
-            resultDiv.innerHTML = '';
-            resultDiv.className = 'mt-6 p-4 rounded-xl min-h-[60px] transition-all duration-300';
-        }, 3000);
-    }, 1000);
+// 数字动画效果
+function animateNumber(element, start, end, duration = 1000) {
+    if (start === end) return;
+
+    const range = end - start;
+    const increment = range / (duration / 16); // 60fps
+    let current = start;
+
+    const timer = setInterval(() => {
+        current += increment;
+        if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+            current = end;
+            clearInterval(timer);
+        }
+        element.textContent = Math.round(current);
+    }, 16);
 }
 
-// 检查数据库连接
-async function checkDatabaseConnection() {
-    const resultDiv = document.getElementById('operationResult');
-    
-    resultDiv.className = 'mt-6 p-4 rounded-xl min-h-[60px] transition-all duration-300 bg-blue-100 border border-blue-400 text-blue-700';
-    resultDiv.innerHTML = `
-        <div class="flex items-center">
-            <svg class="w-5 h-5 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-            </svg>
-            <span>正在检查数据库连接...</span>
-        </div>
-    `;
-    
-    try {
-        // 模拟数据库连接检查
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        resultDiv.className = 'mt-6 p-4 rounded-xl min-h-[60px] transition-all duration-300 bg-green-100 border border-green-400 text-green-700';
-        resultDiv.innerHTML = `
-            <div class="flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <span>✅ 数据库连接正常</span>
-            </div>
-        `;
-        
-        setTimeout(() => {
-            resultDiv.innerHTML = '';
-            resultDiv.className = 'mt-6 p-4 rounded-xl min-h-[60px] transition-all duration-300';
-        }, 3000);
-    } catch (error) {
-        resultDiv.className = 'mt-6 p-4 rounded-xl min-h-[60px] transition-all duration-300 bg-red-100 border border-red-400 text-red-700';
-        resultDiv.innerHTML = `
-            <div class="flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <span>❌ 数据库连接失败: ${error.message}</span>
-            </div>
-        `;
-    }
-}
 
-// 清理缓存
-function clearCache() {
-    const resultDiv = document.getElementById('operationResult');
-    
-    resultDiv.className = 'mt-6 p-4 rounded-xl min-h-[60px] transition-all duration-300 bg-blue-100 border border-blue-400 text-blue-700';
-    resultDiv.innerHTML = `
-        <div class="flex items-center">
-            <svg class="w-5 h-5 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-            </svg>
-            <span>正在清理缓存...</span>
-        </div>
-    `;
-    
-    setTimeout(() => {
-        resultDiv.className = 'mt-6 p-4 rounded-xl min-h-[60px] transition-all duration-300 bg-green-100 border border-green-400 text-green-700';
-        resultDiv.innerHTML = `
-            <div class="flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <span>✅ 缓存清理完成</span>
-            </div>
-        `;
-        
-        setTimeout(() => {
-            resultDiv.innerHTML = '';
-            resultDiv.className = 'mt-6 p-4 rounded-xl min-h-[60px] transition-all duration-300';
-        }, 3000);
-    }, 2000);
-}
+
+

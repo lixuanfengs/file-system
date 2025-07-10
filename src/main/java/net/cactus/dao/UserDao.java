@@ -171,10 +171,57 @@ public interface UserDao {
     
     /**
      * 根据邮箱查询用户
-     * 
+     *
      * @param email 邮箱
      * @return 用户信息
      */
     @Select("SELECT * FROM T_SYSTEM_USER WHERE email = #{email}")
     User findByEmail(@Param("email") String email);
+
+    /**
+     * 根据ID删除用户
+     *
+     * @param id 用户ID
+     * @return 影响行数
+     */
+    @Delete("DELETE FROM T_SYSTEM_USER WHERE id = #{id}")
+    int deleteById(@Param("id") Long id);
+
+    /**
+     * 更新用户密码
+     *
+     * @param userId 用户ID
+     * @param password 新密码
+     * @param updateBy 更新人
+     * @return 影响行数
+     */
+    @Update({
+        "UPDATE T_SYSTEM_USER SET ",
+        "password = #{password}, ",
+        "update_time = NOW(), ",
+        "update_by = #{updateBy} ",
+        "WHERE id = #{userId}"
+    })
+    int updatePassword(@Param("userId") Long userId,
+                      @Param("password") String password,
+                      @Param("updateBy") String updateBy);
+
+    /**
+     * 更新用户状态
+     *
+     * @param userId 用户ID
+     * @param status 状态
+     * @param updateBy 更新人
+     * @return 影响行数
+     */
+    @Update({
+        "UPDATE T_SYSTEM_USER SET ",
+        "status = #{status}, ",
+        "update_time = NOW(), ",
+        "update_by = #{updateBy} ",
+        "WHERE id = #{userId}"
+    })
+    int updateStatus(@Param("userId") Long userId,
+                    @Param("status") Integer status,
+                    @Param("updateBy") String updateBy);
 }

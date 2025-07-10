@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN" 
+      xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/main}">
+
+<head>
+    <title layout:fragment="title">菜单管理</title>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <!-- 页面标题 -->
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800 flex items-center">
+                        <span class="text-4xl mr-3">📋</span>
+                        菜单管理
+                    </h1>
+                    <p class="text-gray-600 mt-2">管理系统菜单结构和导航</p>
+                </div>
+                <button onclick="showCreateMenuModal()" 
+                        class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg">
+                    <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    新增菜单
+                </button>
+            </div>
+
+            <!-- 菜单树形表格 -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="bg-gradient-to-r from-green-500 to-blue-600 text-white p-6">
+                    <h2 class="text-xl font-semibold flex items-center">
+                        <span class="text-2xl mr-3">🌲</span>
+                        菜单树形结构
+                    </h2>
+                </div>
+                
+                <div class="p-6">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full table-auto">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">菜单名称</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">菜单编码</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">菜单路径</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">排序</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="menuTreeTable">
+                                <!-- 菜单树形数据将通过JavaScript动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 创建/编辑菜单模态框 -->
+        <div id="menuModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+            <div class="flex items-center justify-center min-h-screen px-4">
+                <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+                    <div class="bg-gradient-to-r from-green-500 to-blue-600 text-white p-6 rounded-t-lg">
+                        <h3 class="text-lg font-semibold" id="modalTitle">新增菜单</h3>
+                    </div>
+                    <form id="menuForm" class="p-6">
+                        <input type="hidden" id="menuId" name="id">
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">菜单名称</label>
+                            <input type="text" id="menuName" name="permissionName" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">菜单编码</label>
+                            <input type="text" id="menuCode" name="permissionCode" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">父菜单</label>
+                            <select id="parentMenuId" name="parentId"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <option value="0">根菜单</option>
+                                <!-- 父菜单选项将通过JavaScript动态生成 -->
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">菜单路径</label>
+                            <input type="text" id="menuPath" name="path" placeholder="/page/example"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">描述</label>
+                            <textarea id="menuDescription" name="description" rows="3"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">排序</label>
+                            <input type="number" id="menuSortOrder" name="sortOrder" value="0"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="menuStatus" name="status" checked
+                                       class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-300 focus:ring focus:ring-green-200 focus:ring-opacity-50">
+                                <span class="ml-2 text-sm text-gray-700">启用</span>
+                            </label>
+                        </div>
+                        
+                        <div class="flex justify-end space-x-3">
+                            <button type="button" onclick="hideMenuModal()"
+                                    class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                取消
+                            </button>
+                            <button type="submit"
+                                    class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                保存
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script layout:fragment="scripts">
+        // 菜单数据
+        const menuTree = /*[[${menuTree}]]*/ [];
+        const allMenus = /*[[${menuPermissions}]]*/ [];
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            renderMenuTree();
+            loadParentMenuOptions();
+        });
+        
+        // 渲染菜单树形表格
+        function renderMenuTree() {
+            const tbody = document.getElementById('menuTreeTable');
+            tbody.innerHTML = '';
+            
+            function renderNode(node, level = 0) {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                
+                const indent = '&nbsp;'.repeat(level * 4);
+                const statusBadge = getStatusBadge(node.status);
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            ${indent}<span class="text-green-500">📁</span>
+                            <span class="ml-2 text-sm font-medium text-gray-900">${node.permissionName}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${node.permissionCode}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${node.path || '-'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${statusBadge}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${node.sortOrder}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="editMenu(${node.id})" class="text-green-600 hover:text-green-900 mr-3">编辑</button>
+                        <button onclick="deleteMenu(${node.id})" class="text-red-600 hover:text-red-900">删除</button>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+                
+                // 递归渲染子节点
+                if (node.children && node.children.length > 0) {
+                    node.children.forEach(child => renderNode(child, level + 1));
+                }
+            }
+            
+            menuTree.forEach(node => renderNode(node));
+        }
+        
+        // 获取状态徽章
+        function getStatusBadge(status) {
+            if (status === 1) {
+                return '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">启用</span>';
+            } else {
+                return '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">禁用</span>';
+            }
+        }
+        
+        // 加载父菜单选项
+        function loadParentMenuOptions() {
+            const parentSelect = document.getElementById('parentMenuId');
+            parentSelect.innerHTML = '<option value="0">根菜单</option>';
+            
+            function addOption(node, level = 0) {
+                const indent = '　'.repeat(level);
+                const option = document.createElement('option');
+                option.value = node.id;
+                option.textContent = indent + node.permissionName;
+                parentSelect.appendChild(option);
+                
+                if (node.children && node.children.length > 0) {
+                    node.children.forEach(child => addOption(child, level + 1));
+                }
+            }
+            
+            menuTree.forEach(node => addOption(node));
+        }
+        
+        // 显示创建菜单模态框
+        function showCreateMenuModal() {
+            document.getElementById('modalTitle').textContent = '新增菜单';
+            document.getElementById('menuForm').reset();
+            document.getElementById('menuId').value = '';
+            document.getElementById('menuStatus').checked = true;
+            document.getElementById('menuModal').classList.remove('hidden');
+        }
+        
+        // 隐藏菜单模态框
+        function hideMenuModal() {
+            document.getElementById('menuModal').classList.add('hidden');
+        }
+        
+        // 编辑菜单
+        function editMenu(id) {
+            const menu = findMenuById(id);
+            if (!menu) return;
+            
+            document.getElementById('modalTitle').textContent = '编辑菜单';
+            document.getElementById('menuId').value = menu.id;
+            document.getElementById('menuName').value = menu.permissionName;
+            document.getElementById('menuCode').value = menu.permissionCode;
+            document.getElementById('parentMenuId').value = menu.parentId;
+            document.getElementById('menuPath').value = menu.path || '';
+            document.getElementById('menuDescription').value = menu.description || '';
+            document.getElementById('menuSortOrder').value = menu.sortOrder;
+            document.getElementById('menuStatus').checked = menu.status === 1;
+            
+            document.getElementById('menuModal').classList.remove('hidden');
+        }
+        
+        // 查找菜单
+        function findMenuById(id) {
+            function search(nodes) {
+                for (let node of nodes) {
+                    if (node.id === id) return node;
+                    if (node.children) {
+                        const found = search(node.children);
+                        if (found) return found;
+                    }
+                }
+                return null;
+            }
+            return search(menuTree);
+        }
+        
+        // 删除菜单
+        function deleteMenu(id) {
+            const menu = findMenuById(id);
+            if (!menu) return;
+            
+            if (confirm(`确定要删除菜单"${menu.permissionName}"吗？`)) {
+                fetch(`/api/admin/permissions/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('菜单删除成功');
+                        location.reload();
+                    } else {
+                        alert('删除失败：' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('删除失败');
+                });
+            }
+        }
+        
+        // 提交菜单表单
+        document.getElementById('menuForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = {
+                permissionName: formData.get('permissionName'),
+                permissionCode: formData.get('permissionCode'),
+                permissionType: 1, // 菜单类型
+                parentId: parseInt(formData.get('parentId')),
+                path: formData.get('path'),
+                description: formData.get('description'),
+                sortOrder: parseInt(formData.get('sortOrder')),
+                status: document.getElementById('menuStatus').checked ? 1 : 0
+            };
+            
+            const id = document.getElementById('menuId').value;
+            const url = id ? `/api/admin/permissions/${id}` : '/api/admin/permissions';
+            const method = id ? 'PUT' : 'POST';
+            
+            if (id) {
+                data.id = parseInt(id);
+            }
+            
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(id ? '菜单更新成功' : '菜单创建成功');
+                    hideMenuModal();
+                    location.reload();
+                } else {
+                    alert('操作失败：' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('操作失败');
+            });
+        });
+    </script>
+</body>
+</html>

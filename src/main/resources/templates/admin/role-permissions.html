@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-CN" 
+      xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/main}">
+
+<head>
+    <title layout:fragment="title">角色权限分配</title>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <!-- 页面标题 -->
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800 flex items-center">
+                        <span class="text-4xl mr-3">🔑</span>
+                        角色权限分配
+                    </h1>
+                    <p class="text-gray-600 mt-2">为角色 "<span th:text="${role.roleName}" class="font-semibold text-blue-600"></span>" 分配权限</p>
+                </div>
+                <div class="flex space-x-3">
+                    <button onclick="savePermissions()" 
+                            class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg">
+                        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        保存权限
+                    </button>
+                    <a th:href="@{/admin/roles}" 
+                       class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200">
+                        返回
+                    </a>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- 权限树 -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6">
+                        <h2 class="text-xl font-semibold flex items-center">
+                            <span class="text-2xl mr-3">🌳</span>
+                            系统权限树
+                        </h2>
+                        <p class="text-blue-100 mt-2">选择要分配给角色的权限</p>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="mb-4 flex space-x-2">
+                            <button onclick="expandAll()" class="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200">
+                                展开全部
+                            </button>
+                            <button onclick="collapseAll()" class="px-3 py-1 bg-gray-100 text-gray-700 rounded text-sm hover:bg-gray-200">
+                                收起全部
+                            </button>
+                            <button onclick="selectAll()" class="px-3 py-1 bg-green-100 text-green-700 rounded text-sm hover:bg-green-200">
+                                全选
+                            </button>
+                            <button onclick="unselectAll()" class="px-3 py-1 bg-red-100 text-red-700 rounded text-sm hover:bg-red-200">
+                                全不选
+                            </button>
+                        </div>
+                        
+                        <div id="permissionTree" class="max-h-96 overflow-y-auto border border-gray-200 rounded-lg p-4">
+                            <!-- 权限树将通过JavaScript动态生成 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 已选权限 -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="bg-gradient-to-r from-green-500 to-teal-600 text-white p-6">
+                        <h2 class="text-xl font-semibold flex items-center">
+                            <span class="text-2xl mr-3">✅</span>
+                            已选权限
+                        </h2>
+                        <p class="text-green-100 mt-2">当前角色拥有的权限列表</p>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div id="selectedPermissions" class="max-h-96 overflow-y-auto">
+                            <!-- 已选权限列表将通过JavaScript动态生成 -->
+                        </div>
+                        
+                        <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                            <div class="flex justify-between text-sm text-gray-600">
+                                <span>已选权限数量：</span>
+                                <span id="selectedCount" class="font-semibold">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script layout:fragment="scripts">
+        // 数据
+        const role = /*[[${role}]]*/ {};
+        const allPermissions = /*[[${allPermissions}]]*/ [];
+        const rolePermissions = /*[[${rolePermissions}]]*/ [];
+        
+        // 已选权限ID集合
+        let selectedPermissionIds = new Set();
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化已选权限
+            rolePermissions.forEach(permission => {
+                selectedPermissionIds.add(permission.id);
+            });
+            
+            renderPermissionTree();
+            updateSelectedPermissions();
+        });
+        
+        // 渲染权限树
+        function renderPermissionTree() {
+            const container = document.getElementById('permissionTree');
+            container.innerHTML = '';
+            
+            function renderNode(node, level = 0) {
+                const div = document.createElement('div');
+                div.className = 'permission-node';
+                div.style.marginLeft = (level * 20) + 'px';
+                
+                const hasChildren = node.children && node.children.length > 0;
+                const isSelected = selectedPermissionIds.has(node.id);
+                const typeIcon = getTypeIcon(node.permissionType);
+                
+                div.innerHTML = `
+                    <div class="flex items-center py-2 hover:bg-gray-50 rounded">
+                        ${hasChildren ? 
+                            `<button onclick="toggleNode(this)" class="mr-2 w-4 h-4 text-gray-500 hover:text-gray-700">
+                                <svg class="w-4 h-4 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </button>` : 
+                            '<span class="w-6"></span>'
+                        }
+                        <label class="flex items-center cursor-pointer flex-1">
+                            <input type="checkbox" 
+                                   ${isSelected ? 'checked' : ''} 
+                                   onchange="togglePermission(${node.id}, this.checked)"
+                                   class="mr-2 rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                            ${typeIcon}
+                            <span class="ml-2 text-sm">${node.permissionName}</span>
+                            <span class="ml-2 text-xs text-gray-500">(${node.permissionCode})</span>
+                        </label>
+                    </div>
+                    ${hasChildren ? '<div class="children" style="display: none;"></div>' : ''}
+                `;
+                
+                container.appendChild(div);
+                
+                // 递归渲染子节点
+                if (hasChildren) {
+                    const childrenContainer = div.querySelector('.children');
+                    node.children.forEach(child => {
+                        const childNode = renderNode(child, level + 1);
+                        childrenContainer.appendChild(childNode);
+                    });
+                }
+                
+                return div;
+            }
+            
+            allPermissions.forEach(node => renderNode(node));
+        }
+        
+        // 获取类型图标
+        function getTypeIcon(type) {
+            switch(type) {
+                case 1: return '<span class="text-blue-500">📁</span>';
+                case 2: return '<span class="text-green-500">🔘</span>';
+                case 3: return '<span class="text-purple-500">🔗</span>';
+                default: return '<span class="text-gray-500">❓</span>';
+            }
+        }
+        
+        // 切换节点展开/收起
+        function toggleNode(button) {
+            const svg = button.querySelector('svg');
+            const childrenContainer = button.closest('.permission-node').querySelector('.children');
+            
+            if (childrenContainer.style.display === 'none') {
+                childrenContainer.style.display = 'block';
+                svg.style.transform = 'rotate(90deg)';
+            } else {
+                childrenContainer.style.display = 'none';
+                svg.style.transform = 'rotate(0deg)';
+            }
+        }
+        
+        // 展开全部
+        function expandAll() {
+            document.querySelectorAll('.children').forEach(container => {
+                container.style.display = 'block';
+            });
+            document.querySelectorAll('.permission-node svg').forEach(svg => {
+                svg.style.transform = 'rotate(90deg)';
+            });
+        }
+        
+        // 收起全部
+        function collapseAll() {
+            document.querySelectorAll('.children').forEach(container => {
+                container.style.display = 'none';
+            });
+            document.querySelectorAll('.permission-node svg').forEach(svg => {
+                svg.style.transform = 'rotate(0deg)';
+            });
+        }
+        
+        // 全选
+        function selectAll() {
+            document.querySelectorAll('#permissionTree input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = true;
+                const permissionId = parseInt(checkbox.getAttribute('onchange').match(/\d+/)[0]);
+                selectedPermissionIds.add(permissionId);
+            });
+            updateSelectedPermissions();
+        }
+        
+        // 全不选
+        function unselectAll() {
+            document.querySelectorAll('#permissionTree input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            selectedPermissionIds.clear();
+            updateSelectedPermissions();
+        }
+        
+        // 切换权限选择
+        function togglePermission(permissionId, checked) {
+            if (checked) {
+                selectedPermissionIds.add(permissionId);
+            } else {
+                selectedPermissionIds.delete(permissionId);
+            }
+            updateSelectedPermissions();
+        }
+        
+        // 更新已选权限显示
+        function updateSelectedPermissions() {
+            const container = document.getElementById('selectedPermissions');
+            const countElement = document.getElementById('selectedCount');
+            
+            container.innerHTML = '';
+            
+            if (selectedPermissionIds.size === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">暂无选择权限</p>';
+            } else {
+                const selectedPermissions = [];
+                
+                function collectSelected(nodes) {
+                    nodes.forEach(node => {
+                        if (selectedPermissionIds.has(node.id)) {
+                            selectedPermissions.push(node);
+                        }
+                        if (node.children) {
+                            collectSelected(node.children);
+                        }
+                    });
+                }
+                
+                collectSelected(allPermissions);
+                
+                selectedPermissions.forEach(permission => {
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center justify-between p-3 border border-gray-200 rounded-lg mb-2';
+                    div.innerHTML = `
+                        <div class="flex items-center">
+                            ${getTypeIcon(permission.permissionType)}
+                            <span class="ml-2 text-sm font-medium">${permission.permissionName}</span>
+                            <span class="ml-2 text-xs text-gray-500">${permission.permissionCode}</span>
+                        </div>
+                        <button onclick="removePermission(${permission.id})" class="text-red-500 hover:text-red-700">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+            
+            countElement.textContent = selectedPermissionIds.size;
+        }
+        
+        // 移除权限
+        function removePermission(permissionId) {
+            selectedPermissionIds.delete(permissionId);
+            
+            // 更新复选框状态
+            const checkbox = document.querySelector(`input[onchange*="${permissionId}"]`);
+            if (checkbox) {
+                checkbox.checked = false;
+            }
+            
+            updateSelectedPermissions();
+        }
+        
+        // 保存权限
+        function savePermissions() {
+            const permissionIds = Array.from(selectedPermissionIds);
+            
+            if (confirm(`确定要为角色"${role.roleName}"分配 ${permissionIds.length} 个权限吗？`)) {
+                fetch(`/api/admin/roles/${role.id}/permissions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(permissionIds)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('权限分配成功');
+                        window.location.href = '/admin/roles';
+                    } else {
+                        alert('分配失败：' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('分配失败');
+                });
+            }
+        }
+    </script>
+</body>
+</html>

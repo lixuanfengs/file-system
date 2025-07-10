@@ -30,9 +30,9 @@ public class FileMetaServiceImpl implements FileMetaService {
     }
 
     @Override
-    public List<FileMeta> findByPage(int page, int size) {
-        int offset = (page - 1) * size;
-        return this.fileMetaDao.findByPage(offset, size);
+    public List<FileMeta> findByPage() {
+        // PageHelper will handle the pagination automatically
+        return this.fileMetaDao.findByPage();
     }
 
     @Override
@@ -41,9 +41,9 @@ public class FileMetaServiceImpl implements FileMetaService {
     }
 
     @Override
-    public List<FileMeta> searchByPage(String keyword, int page, int size) {
-        int offset = (page - 1) * size;
-        return this.fileMetaDao.searchByPage(keyword, offset, size);
+    public List<FileMeta> searchByPage(String keyword) {
+        // PageHelper will handle the pagination automatically
+        return this.fileMetaDao.searchByPage(keyword);
     }
 
     @Override

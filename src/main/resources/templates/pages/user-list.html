@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+
+<head>
+    <title layout:fragment="title">用户管理</title>
+</head>
+
+<body>
+<div layout:fragment="content">
+    <div class="max-w-7xl mx-auto px-6 py-8">
+        <!-- 页面头部 -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">用户管理</h1>
+                    <p class="text-gray-600 mt-2">管理系统用户信息</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- 添加用户按钮 -->
+                    <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        <span>添加用户</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 动态表格组件 - 用户列表示例 -->
+        <div th:replace="~{fragments/reusable-table :: dynamicTable(
+                tableId='userTable',
+                tableTitle='用户列表',
+                pageData=${pageData},
+                columns=${columns},
+                actionBaseUrl='/user',
+                showBatchActions=false,
+                showColumnSettings=true
+            )}">
+        </div>
+
+        <!-- 分页组件 -->
+        <div th:replace="~{fragments/pagination :: pagination(
+                pageData=${pageData},
+                baseUrl='/page/user-list',
+                extraParams='',
+                showPageSize=true
+            )}">
+        </div>
+    </div>
+</div>
+
+<!-- 脚本 -->
+<script layout:fragment="scripts" th:src="@{/js/reusable-table.js}"></script>
+
+</body>
+</html>

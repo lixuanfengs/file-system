@@ -1,8 +1,11 @@
 package net.cactus.service.impl;
 
 import net.cactus.dao.UserDao;
+import net.cactus.dao.UserRoleDao;
 import net.cactus.pojo.User;
+import net.cactus.pojo.Role;
 import net.cactus.service.UserService;
+import net.cactus.service.RoleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +33,13 @@ public class UserServiceImpl implements UserService {
     
     @Autowired
     private UserDao userDao;
-    
+
+    @Autowired
+    private UserRoleDao userRoleDao;
+
+    @Autowired
+    private RoleService roleService;
+
     private PasswordEncoder passwordEncoder;
 
     public UserServiceImpl() {
@@ -132,5 +141,111 @@ public class UserServiceImpl implements UserService {
     public boolean existsByEmail(String email) {
         User user = userDao.findByEmail(email);
         return user != null;
+    }
+
+    @Override
+    public boolean deleteUser(Long id) {
+        try {
+            int result = userDao.deleteById(id);
+            if (result > 0) {
+                logger.info("User deleted successfully: {}", id);
+                return true;
+            } else {
+                logger.warn("User not found for deletion: {}", id);
+                return false;
+            }
+        } catch (Exception e) {
+            logger.error("Failed to delete user {}: {}", id, e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public boolean assignRolesToUser(Long userId, List<Long> roleIds, String operator) {
+        try {
+            // 先清空用户的所有角色
+            userRoleDao.clearUserRoles(userId);
+
+            // 批量分配新角色
+            if (roleIds != null && !roleIds.isEmpty()) {
+                int result = userRoleDao.batchAssignRolesToUser(userId, roleIds, operator);
+                logger.info("Assigned {} roles to user {}", result, userId);
+            }
+
+            return true;
+        } catch (Exception e) {
+            logger.error("Failed to assign roles to user {}: {}", userId, e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public boolean removeRoleFromUser(Long userId, Long roleId) {
+        try {
+            int result = userRoleDao.removeRoleFromUser(userId, roleId);
+            if (result > 0) {
+                logger.info("Removed role {} from user {}", roleId, userId);
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            logger.error("Failed to remove role {} from user {}: {}", roleId, userId, e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public boolean clearUserRoles(Long userId) {
+        try {
+            int result = userRoleDao.clearUserRoles(userId);
+            logger.info("Cleared {} roles from user {}", result, userId);
+            return true;
+        } catch (Exception e) {
+            logger.error("Failed to clear roles from user {}: {}", userId, e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public boolean checkUserHasRole(Long userId, String roleCode) {
+        List<Long> roleIds = userRoleDao.findRoleIdsByUserId(userId);
+        for (Long roleId : roleIds) {
+            Role role = roleService.findById(roleId);
+            if (role != null && roleCode.equals(role.getRoleCode())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean updateUserPassword(Long userId, String newPassword, String operator) {
+        try {
+            String encodedPassword = passwordEncoder.encode(newPassword);
+            int result = userDao.updatePassword(userId, encodedPassword, operator);
+            if (result > 0) {
+                logger.info("Password updated for user {} by {}", userId, operator);
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            logger.error("Failed to update password for user {}: {}", userId, e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public boolean updateUserStatus(Long userId, Integer status, String operator) {
+        try {
+            int result = userDao.updateStatus(userId, status, operator);
+            if (result > 0) {
+                logger.info("Status updated for user {} to {} by {}", userId, status, operator);
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            logger.error("Failed to update status for user {}: {}", userId, e.getMessage());
+            return false;
+        }
     }
 }

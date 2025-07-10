@@ -106,7 +106,10 @@ public class SecurityConfig {
                     "/login", "/login/**",
                     "/css/**", "/js/**", "/images/**", "/static/**",
                     "/health", "/error",
-                    "/favicon.ico"
+                    "/favicon.ico",
+                    "/api/system/info",
+                    "/api/system/monitor",
+                    "/api/system/overview"
                 ).permitAll()
                 
                 // 文件操作需要认证

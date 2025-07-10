@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!-- 分页组件样式已包含在 dynamic-table.css 中 -->
+</head>
+<body>
+
+<!--
+  通用分页组件
+  参数说明:
+  - pageData: 分页数据对象
+  - baseUrl: 基础URL
+  - extraParams: 额外参数 (可选)
+  - showPageSize: 是否显示页面大小选择器 (可选，默认false)
+-->
+<div th:fragment="pagination(pageData, baseUrl, extraParams, showPageSize)"
+     th:with="showSizeSelector=${showPageSize != null ? showPageSize : false}">
+     
+    <div th:unless="${#lists.isEmpty(pageData.list)}" class="pagination-container">
+        <!-- 分页信息 -->
+        <div class="pagination-info">
+            共 <strong th:text="${pageData.total}">0</strong> 条记录，
+            第 <strong th:text="${pageData.pageNum}">1</strong> / <strong th:text="${pageData.pages}">1</strong> 页
+            <span th:if="${showSizeSelector}" class="page-size-selector">
+                每页显示
+                <select class="page-size-select" onchange="changePageSize(this.value)">
+                    <option value="10" th:selected="${pageData.pageSize == 10}">10</option>
+                    <option value="20" th:selected="${pageData.pageSize == 20}">20</option>
+                    <option value="50" th:selected="${pageData.pageSize == 50}">50</option>
+                    <option value="100" th:selected="${pageData.pageSize == 100}">100</option>
+                </select>
+                条
+            </span>
+        </div>
+        
+        <!-- 分页控件 -->
+        <div class="pagination-controls">
+            <!-- 首页 -->
+            <a th:if="${pageData.pageNum > 1}"
+               th:href="${baseUrl + '?page=1&size=' + pageData.pageSize + (extraParams ?: '')}"
+               class="page-btn">首页</a>
+            <span th:unless="${pageData.pageNum > 1}" class="page-btn disabled">首页</span>
+
+            <!-- 上一页 -->
+            <a th:if="${pageData.hasPreviousPage}"
+               th:href="${baseUrl + '?page=' + pageData.prePage + '&size=' + pageData.pageSize + (extraParams ?: '')}"
+               class="page-btn">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </a>
+            <span th:unless="${pageData.hasPreviousPage}" class="page-btn disabled">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </span>
+            
+            <!-- 页码 -->
+            <div th:with="startPage=${pageData.pageNum - 2 > 0 ? pageData.pageNum - 2 : 1},
+                         endPage=${pageData.pageNum + 2 <= pageData.pages ? pageData.pageNum + 2 : pageData.pages}">
+                
+                <!-- 显示省略号 -->
+                <span th:if="${startPage > 1}" class="page-btn disabled">...</span>
+                
+                <!-- 页码按钮 -->
+                <th:block th:each="i : ${#numbers.sequence(startPage, endPage)}">
+                    <a th:if="${i != pageData.pageNum}"
+                       th:href="${baseUrl + '?page=' + i + '&size=' + pageData.pageSize + (extraParams ?: '')}"
+                       class="page-btn"
+                       th:text="${i}">1</a>
+                    <span th:if="${i == pageData.pageNum}"
+                          class="page-btn current"
+                          th:text="${i}">1</span>
+                </th:block>
+                
+                <!-- 显示省略号 -->
+                <span th:if="${endPage < pageData.pages}" class="page-btn disabled">...</span>
+            </div>
+            
+            <!-- 下一页 -->
+            <a th:if="${pageData.hasNextPage}"
+               th:href="${baseUrl + '?page=' + pageData.nextPage + '&size=' + pageData.pageSize + (extraParams ?: '')}"
+               class="page-btn">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </a>
+            <span th:unless="${pageData.hasNextPage}" class="page-btn disabled">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </span>
+
+            <!-- 末页 -->
+            <a th:if="${pageData.pageNum < pageData.pages}"
+               th:href="${baseUrl + '?page=' + pageData.pages + '&size=' + pageData.pageSize + (extraParams ?: '')}"
+               class="page-btn">末页</a>
+            <span th:unless="${pageData.pageNum < pageData.pages}" class="page-btn disabled">末页</span>
+        </div>
+    </div>
+    
+    <script th:if="${showSizeSelector}">
+        function changePageSize(size) {
+            const url = new URL(window.location);
+            url.searchParams.set('size', size);
+            url.searchParams.set('page', '1'); // 重置到第一页
+            window.location.href = url.toString();
+        }
+    </script>
+</div>
+
+</body>
+</html>

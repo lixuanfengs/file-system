@@ -326,7 +326,6 @@ ENTRYPOINT ["java", "--add-opens", "java.base/java.lang=ALL-UNNAMED", "--add-ope
 
 - 项目地址: [GitHub Repository]
 - 问题反馈: [Issues]
-- 邮箱: [your-email@example.com]
 
 ---
 

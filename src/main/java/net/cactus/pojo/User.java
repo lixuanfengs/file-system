@@ -1,5 +1,6 @@
 package net.cactus.pojo;
 
+import net.cactus.annotation.TableColumn;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -16,19 +17,44 @@ import org.springframework.security.core.userdetails.UserDetails;
  * @version 1.0
  */
 public class User implements UserDetails {
-    
+
+    @TableColumn(key = "id", label = "用户ID", order = 1, visible = false)
     private Long id;
+
+    @TableColumn(key = "username", label = "用户名", order = 2)
     private String username;
+
+    // 密码字段不在表格中显示
     private String password;
+
+    @TableColumn(key = "email", label = "邮箱", order = 3)
     private String email;
+
+    @TableColumn(key = "phone", label = "手机号", order = 4)
     private String phone;
+
+    @TableColumn(key = "realName", label = "真实姓名", order = 5)
     private String realName;
+
+    // 头像URL不在表格中显示
     private String avatarUrl;
+
+    @TableColumn(key = "status", label = "状态", type = "badge", order = 6)
     private Integer status; // 0-禁用, 1-启用
+
+    @TableColumn(key = "lastLoginTime", label = "最后登录", type = "date", order = 7)
     private LocalDateTime lastLoginTime;
+
+    @TableColumn(key = "lastLoginIp", label = "登录IP", order = 8, visible = false)
     private String lastLoginIp;
+
+    @TableColumn(key = "loginCount", label = "登录次数", order = 9)
     private Integer loginCount;
+
+    @TableColumn(key = "createTime", label = "创建时间", type = "date", order = 10)
     private LocalDateTime createTime;
+
+    // 更新时间、创建人、更新人不在表格中显示
     private LocalDateTime updateTime;
     private String createBy;
     private String updateBy;

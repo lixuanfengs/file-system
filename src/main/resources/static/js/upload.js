@@ -1,10 +1,5 @@
 // 文件上传页面 JavaScript
 
-// 页面加载时的初始化
-document.addEventListener('DOMContentLoaded', function() {
-    checkHealth();
-});
-
 // 拖拽处理函数
 function handleDragOver(event) {
     event.preventDefault();
@@ -104,46 +99,6 @@ function showProgress(type, show = true) {
 function updateProgress(type, percent) {
     const progressBar = document.querySelector(`#${type}Progress .progress-bar`);
     progressBar.style.width = percent + '%';
-}
-
-// 健康检查
-async function checkHealth() {
-    const resultDiv = document.getElementById('healthResult');
-    try {
-        resultDiv.className = 'bg-blue-100 border border-blue-400 text-blue-700 p-4 rounded-xl animate-pulse';
-        resultDiv.innerHTML = '🔄 正在检查服务状态...';
-        
-        const response = await fetch(`${FileServer.baseUrl}/health`);
-        const data = await response.json();
-        
-        resultDiv.className = 'bg-green-100 border border-green-400 text-green-700 p-4 rounded-xl animate-fade-in';
-        resultDiv.innerHTML = `
-            <div class="flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <div>
-                    <div class="font-semibold">✅ 服务状态正常</div>
-                    <div class="text-sm mt-1">响应码: ${data.code} | 消息: ${data.message}</div>
-                    <div class="text-sm">结果: ${data.result}</div>
-                </div>
-            </div>
-        `;
-    } catch (error) {
-        resultDiv.className = 'bg-red-100 border border-red-400 text-red-700 p-4 rounded-xl animate-fade-in';
-        resultDiv.innerHTML = `
-            <div class="flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <div>
-                    <div class="font-semibold">❌ 服务连接失败</div>
-                    <div class="text-sm mt-1">错误信息: ${error.message}</div>
-                    <div class="text-sm">请检查服务是否正常运行</div>
-                </div>
-            </div>
-        `;
-    }
 }
 
 // 单文件上传
@@ -264,7 +219,7 @@ async function uploadMultipleFiles() {
     const formData = new FormData();
     const fileNames = [];
     for (let file of fileInput.files) {
-        formData.append('files', file);
+        formData.append('file', file);
         fileNames.push(file.name);
     }
 

@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-CN" 
+      xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/main}">
+
+<head>
+    <title layout:fragment="title">用户详情</title>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <!-- 页面标题 -->
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800 flex items-center">
+                        <span class="text-4xl mr-3">👤</span>
+                        用户详情
+                    </h1>
+                    <p class="text-gray-600 mt-2">查看用户信息、角色和权限</p>
+                </div>
+                <div class="flex space-x-3">
+                    <a th:href="@{'/admin/users/' + ${user.id} + '/edit'}" 
+                       class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200">
+                        编辑用户
+                    </a>
+                    <a th:href="@{/admin/users}" 
+                       class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200">
+                        返回列表
+                    </a>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- 用户基本信息 -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6">
+                            <div class="flex items-center">
+                                <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4">
+                                    <img th:if="${user.avatarUrl}" th:src="${user.avatarUrl}" alt="头像" class="w-14 h-14 rounded-full object-cover">
+                                    <span th:unless="${user.avatarUrl}" class="text-2xl font-bold" th:text="${#strings.substring(user.username, 0, 1).toUpperCase()}">U</span>
+                                </div>
+                                <div>
+                                    <h2 class="text-2xl font-bold" th:text="${user.realName ?: user.username}">用户名</h2>
+                                    <p class="text-blue-100" th:text="'@' + ${user.username}">@username</p>
+                                    <div class="flex items-center mt-2">
+                                        <span th:if="${user.status == 1}" class="px-2 py-1 bg-green-500 text-white text-xs rounded-full">正常</span>
+                                        <span th:if="${user.status == 0}" class="px-2 py-1 bg-red-500 text-white text-xs rounded-full">禁用</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500 mb-1">用户名</label>
+                                    <p class="text-gray-900 font-medium" th:text="${user.username}">-</p>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500 mb-1">真实姓名</label>
+                                    <p class="text-gray-900" th:text="${user.realName ?: '-'}">-</p>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500 mb-1">邮箱</label>
+                                    <p class="text-gray-900" th:text="${user.email ?: '-'}">-</p>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500 mb-1">手机号</label>
+                                    <p class="text-gray-900" th:text="${user.phone ?: '-'}">-</p>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500 mb-1">创建时间</label>
+                                    <p class="text-gray-900" th:text="${user.createTime != null ? #temporals.format(user.createTime, 'yyyy-MM-dd HH:mm:ss') : '-'}">-</p>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500 mb-1">创建人</label>
+                                    <p class="text-gray-900" th:text="${user.createBy ?: '-'}">-</p>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500 mb-1">最后更新</label>
+                                    <p class="text-gray-900" th:text="${user.updateTime != null ? #temporals.format(user.updateTime, 'yyyy-MM-dd HH:mm:ss') : '-'}">-</p>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500 mb-1">更新人</label>
+                                    <p class="text-gray-900" th:text="${user.updateBy ?: '-'}">-</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 登录统计 -->
+                    <div class="mt-6 bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div class="bg-gradient-to-r from-green-500 to-teal-600 text-white p-6">
+                            <h3 class="text-xl font-semibold flex items-center">
+                                <span class="text-2xl mr-3">📊</span>
+                                登录统计
+                            </h3>
+                        </div>
+                        
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="text-center">
+                                    <div class="text-3xl font-bold text-blue-600" th:text="${user.loginCount ?: 0}">0</div>
+                                    <div class="text-sm text-gray-500">登录次数</div>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <div class="text-lg font-medium text-gray-900" th:text="${user.lastLoginTime != null ? #temporals.format(user.lastLoginTime, 'MM-dd HH:mm') : '从未登录'}">-</div>
+                                    <div class="text-sm text-gray-500">最后登录时间</div>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <div class="text-lg font-medium text-gray-900" th:text="${user.lastLoginIp ?: '-'}">-</div>
+                                    <div class="text-sm text-gray-500">最后登录IP</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 角色和权限 -->
+                <div class="lg:col-span-1 space-y-6">
+                    <!-- 用户角色 -->
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div class="bg-gradient-to-r from-purple-500 to-pink-600 text-white p-6">
+                            <h3 class="text-xl font-semibold flex items-center">
+                                <span class="text-2xl mr-3">🔑</span>
+                                用户角色
+                            </h3>
+                        </div>
+                        
+                        <div class="p-6">
+                            <div th:if="${#lists.isEmpty(userRoles)}" class="text-center text-gray-500 py-4">
+                                暂无分配角色
+                            </div>
+                            
+                            <div th:unless="${#lists.isEmpty(userRoles)}" class="space-y-3">
+                                <div th:each="role : ${userRoles}" class="flex items-center p-3 bg-gray-50 rounded-lg">
+                                    <div class="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                                        <span th:text="${#strings.substring(role.roleName, 0, 1)}">R</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="font-medium text-gray-900" th:text="${role.roleName}">角色名</div>
+                                        <div class="text-xs text-gray-500" th:text="${role.description}">角色描述</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 用户权限 -->
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div class="bg-gradient-to-r from-orange-500 to-red-600 text-white p-6">
+                            <h3 class="text-xl font-semibold flex items-center">
+                                <span class="text-2xl mr-3">🛡️</span>
+                                菜单权限
+                            </h3>
+                        </div>
+                        
+                        <div class="p-6">
+                            <div th:if="${#lists.isEmpty(userPermissions)}" class="text-center text-gray-500 py-4">
+                                暂无菜单权限
+                            </div>
+                            
+                            <div th:unless="${#lists.isEmpty(userPermissions)}" class="max-h-64 overflow-y-auto">
+                                <div id="permissionTree">
+                                    <!-- 权限树将通过JavaScript渲染 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 快捷操作 -->
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div class="bg-gradient-to-r from-gray-500 to-gray-600 text-white p-6">
+                            <h3 class="text-xl font-semibold flex items-center">
+                                <span class="text-2xl mr-3">⚡</span>
+                                快捷操作
+                            </h3>
+                        </div>
+                        
+                        <div class="p-6 space-y-3">
+                            <button onclick="resetPassword()" 
+                                    class="w-full bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg transition-colors duration-200">
+                                重置密码
+                            </button>
+                            
+                            <button onclick="toggleStatus()" 
+                                    th:class="${user.status == 1} ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-500 hover:bg-green-600'"
+                                    class="w-full text-white px-4 py-2 rounded-lg transition-colors duration-200"
+                                    th:text="${user.status == 1} ? '禁用用户' : '启用用户'">
+                            </button>
+                            
+                            <button th:if="${user.username != #authentication.name}" 
+                                    onclick="deleteUser()" 
+                                    class="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors duration-200">
+                                删除用户
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script layout:fragment="scripts">
+        // 用户数据
+        const user = /*[[${user}]]*/ {};
+        const userPermissions = /*[[${userPermissions}]]*/ [];
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            renderPermissionTree();
+        });
+        
+        // 渲染权限树
+        function renderPermissionTree() {
+            const container = document.getElementById('permissionTree');
+            if (!container || userPermissions.length === 0) return;
+            
+            container.innerHTML = '';
+            
+            function renderNode(node, level = 0) {
+                const div = document.createElement('div');
+                div.className = 'permission-item';
+                div.style.marginLeft = (level * 16) + 'px';
+                
+                const hasChildren = node.children && node.children.length > 0;
+                
+                div.innerHTML = `
+                    <div class="flex items-center py-1 text-sm">
+                        ${hasChildren ? 
+                            '<span class="w-4 h-4 mr-2 text-gray-400">📁</span>' : 
+                            '<span class="w-4 h-4 mr-2 text-blue-500">📄</span>'
+                        }
+                        <span class="text-gray-700">${node.permissionName}</span>
+                        <span class="ml-2 text-xs text-gray-400">${node.permissionCode}</span>
+                    </div>
+                `;
+                
+                container.appendChild(div);
+                
+                // 递归渲染子节点
+                if (hasChildren) {
+                    node.children.forEach(child => renderNode(child, level + 1));
+                }
+            }
+            
+            userPermissions.forEach(node => renderNode(node));
+        }
+        
+        // 重置密码
+        function resetPassword() {
+            const newPassword = prompt(`请输入用户 "${user.username}" 的新密码：`);
+            if (newPassword && newPassword.trim()) {
+                if (newPassword.length < 6) {
+                    alert('密码长度不能少于6位');
+                    return;
+                }
+                
+                if (confirm(`确定要重置用户 "${user.username}" 的密码吗？`)) {
+                    fetch(`/api/admin/users/${user.id}/password?newPassword=${encodeURIComponent(newPassword)}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('密码重置成功');
+                        } else {
+                            alert('重置失败：' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('重置失败');
+                    });
+                }
+            }
+        }
+        
+        // 切换用户状态
+        function toggleStatus() {
+            const newStatus = user.status === 1 ? 0 : 1;
+            const action = newStatus === 1 ? '启用' : '禁用';
+            
+            if (confirm(`确定要${action}用户 "${user.username}" 吗？`)) {
+                fetch(`/api/admin/users/${user.id}/status?status=${newStatus}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(`用户${action}成功`);
+                        location.reload();
+                    } else {
+                        alert(`${action}失败：` + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert(`${action}失败`);
+                });
+            }
+        }
+        
+        // 删除用户
+        function deleteUser() {
+            if (confirm(`确定要删除用户 "${user.username}" 吗？此操作不可恢复！`)) {
+                fetch(`/api/admin/users/${user.id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('用户删除成功');
+                        window.location.href = '/admin/users';
+                    } else {
+                        alert('删除失败：' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('删除失败');
+                });
+            }
+        }
+    </script>
+</body>
+</html>

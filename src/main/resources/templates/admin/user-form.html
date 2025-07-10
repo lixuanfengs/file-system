@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN" 
+      xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/main}">
+
+<head>
+    <title layout:fragment="title" th:text="${user.id != null ? '编辑用户' : '新增用户'}">用户表单</title>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <div class="max-w-4xl mx-auto px-6 py-8">
+            <!-- 页面标题 -->
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800 flex items-center">
+                        <span class="text-4xl mr-3">👤</span>
+                        <span th:text="${user.id != null ? '编辑用户' : '新增用户'}">用户表单</span>
+                    </h1>
+                    <p class="text-gray-600 mt-2" th:text="${user.id != null ? '修改用户信息和角色分配' : '创建新的系统用户'}">用户表单描述</p>
+                </div>
+                <a th:href="@{/admin/users}" 
+                   class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200">
+                    返回列表
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- 用户信息表单 -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6">
+                            <h2 class="text-xl font-semibold flex items-center">
+                                <span class="text-2xl mr-3">📝</span>
+                                用户信息
+                            </h2>
+                        </div>
+                        
+                        <form id="userForm" class="p-6" th:action="@{${user.id != null ? '/api/admin/users/' + user.id : '/api/admin/users'}}" 
+                              th:method="${user.id != null ? 'PUT' : 'POST'}">
+                            <input type="hidden" th:field="*{user.id}">
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">用户名 *</label>
+                                    <input type="text" th:field="*{user.username}" required
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                           th:readonly="${user.id != null}">
+                                </div>
+                                
+                                <div th:if="${user.id == null}">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">密码 *</label>
+                                    <input type="password" name="password" required
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                           placeholder="请输入密码">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">邮箱</label>
+                                    <input type="email" th:field="*{user.email}"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">手机号</label>
+                                    <input type="tel" th:field="*{user.phone}"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">真实姓名</label>
+                                    <input type="text" th:field="*{user.realName}"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">头像URL</label>
+                                    <input type="url" th:field="*{user.avatarUrl}"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">状态</label>
+                                    <select th:field="*{user.status}"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="1">启用</option>
+                                        <option value="0">禁用</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-8 flex justify-end space-x-4">
+                                <a th:href="@{/admin/users}" 
+                                   class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    取消
+                                </a>
+                                <button type="submit"
+                                        class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <span th:text="${user.id != null ? '更新用户' : '创建用户'}">保存</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 角色分配 -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div class="bg-gradient-to-r from-green-500 to-teal-600 text-white p-6">
+                            <h2 class="text-xl font-semibold flex items-center">
+                                <span class="text-2xl mr-3">🔑</span>
+                                角色分配
+                            </h2>
+                        </div>
+                        
+                        <div class="p-6">
+                            <div class="space-y-3">
+                                <div th:each="role : ${roles}" class="flex items-center">
+                                    <input type="checkbox" 
+                                           th:id="'role_' + ${role.id}"
+                                           th:value="${role.id}"
+                                           name="roleIds"
+                                           th:checked="${userRoles != null and #lists.contains(userRoles, role)}"
+                                           class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                                    <label th:for="'role_' + ${role.id}" class="ml-3 flex-1 cursor-pointer">
+                                        <div class="text-sm font-medium text-gray-900" th:text="${role.roleName}">角色名</div>
+                                        <div class="text-xs text-gray-500" th:text="${role.description}">角色描述</div>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div th:if="${user.id != null}" class="mt-6">
+                                <button type="button" onclick="saveRoles()" 
+                                        class="w-full bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                    保存角色分配
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 用户统计信息 -->
+                    <div th:if="${user.id != null}" class="mt-6 bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div class="bg-gradient-to-r from-purple-500 to-pink-600 text-white p-6">
+                            <h2 class="text-xl font-semibold flex items-center">
+                                <span class="text-2xl mr-3">📊</span>
+                                用户统计
+                            </h2>
+                        </div>
+                        
+                        <div class="p-6 space-y-4">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">登录次数</span>
+                                <span class="font-semibold" th:text="${user.loginCount ?: 0}">0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">最后登录</span>
+                                <span class="text-sm" th:text="${user.lastLoginTime != null ? #temporals.format(user.lastLoginTime, 'yyyy-MM-dd HH:mm') : '从未登录'}">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">最后登录IP</span>
+                                <span class="text-sm" th:text="${user.lastLoginIp ?: '-'}">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">创建时间</span>
+                                <span class="text-sm" th:text="${user.createTime != null ? #temporals.format(user.createTime, 'yyyy-MM-dd HH:mm') : '-'}">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script layout:fragment="scripts">
+        // 提交用户表单
+        document.getElementById('userForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = {
+                username: formData.get('username'),
+                email: formData.get('email'),
+                phone: formData.get('phone'),
+                realName: formData.get('realName'),
+                avatarUrl: formData.get('avatarUrl'),
+                status: parseInt(formData.get('status'))
+            };
+            
+            // 如果是新增用户，添加密码
+            const password = formData.get('password');
+            if (password) {
+                data.password = password;
+            }
+            
+            const userId = formData.get('id');
+            const url = userId ? `/api/admin/users/${userId}` : '/api/admin/users';
+            const method = userId ? 'PUT' : 'POST';
+            
+            if (userId) {
+                data.id = parseInt(userId);
+            }
+            
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(userId ? '用户更新成功' : '用户创建成功');
+                    
+                    // 如果是新增用户且选择了角色，保存角色分配
+                    if (!userId && data.data && data.data.id) {
+                        const roleIds = Array.from(document.querySelectorAll('input[name="roleIds"]:checked'))
+                                           .map(cb => parseInt(cb.value));
+                        if (roleIds.length > 0) {
+                            saveUserRoles(data.data.id, roleIds);
+                        } else {
+                            window.location.href = '/admin/users';
+                        }
+                    } else {
+                        window.location.href = '/admin/users';
+                    }
+                } else {
+                    alert('操作失败：' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('操作失败');
+            });
+        });
+        
+        // 保存角色分配
+        function saveRoles() {
+            const userId = document.querySelector('input[name="id"]').value;
+            if (!userId) return;
+            
+            const roleIds = Array.from(document.querySelectorAll('input[name="roleIds"]:checked'))
+                               .map(cb => parseInt(cb.value));
+            
+            saveUserRoles(userId, roleIds);
+        }
+        
+        // 保存用户角色
+        function saveUserRoles(userId, roleIds) {
+            fetch(`/api/admin/users/${userId}/roles`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(roleIds)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('角色分配成功');
+                    window.location.href = '/admin/users';
+                } else {
+                    alert('角色分配失败：' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('角色分配失败');
+            });
+        }
+    </script>
+</body>
+</html>

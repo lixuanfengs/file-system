@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN" 
+      xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/main}">
+
+<head>
+    <title layout:fragment="title">用户管理</title>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <!-- 页面标题 -->
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800 flex items-center">
+                        <span class="text-4xl mr-3">👥</span>
+                        用户管理
+                    </h1>
+                    <p class="text-gray-600 mt-2">管理系统用户账号和权限</p>
+                </div>
+                <a th:href="@{/admin/users/new}" 
+                   class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg">
+                    <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    新增用户
+                </a>
+            </div>
+
+            <!-- 用户统计卡片 -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                            <span class="text-2xl">👤</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">总用户</h3>
+                            <p class="text-2xl font-bold text-blue-600" th:text="${#lists.size(users)}">0</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                            <span class="text-2xl">✅</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">活跃用户</h3>
+                            <p class="text-2xl font-bold text-green-600" th:text="${#lists.size(users.?[status == 1])}">0</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-4">
+                            <span class="text-2xl">❌</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">禁用用户</h3>
+                            <p class="text-2xl font-bold text-red-600" th:text="${#lists.size(users.?[status == 0])}">0</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mr-4">
+                            <span class="text-2xl">🔑</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">管理员</h3>
+                            <p class="text-2xl font-bold text-purple-600"
+                               th:text="${users != null ? #lists.size(users.?[roles != null and roles.?[roleName == 'ADMIN'].size() > 0]) : 0}">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 用户列表 -->
+            <div class="bg-white rounded-xl shadow-lg border border-gray-100">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-xl font-semibold text-gray-800">用户列表</h2>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">用户信息</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">角色</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">最后登录</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr th:each="user : ${users}" class="hover:bg-gray-50 transition-colors duration-200">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mr-4">
+                                            <span class="text-white text-sm font-semibold" th:text="${#strings.substring(user.username, 0, 1).toUpperCase()}">U</span>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900" th:text="${user.username}">用户名</div>
+                                            <div class="text-sm text-gray-500" th:text="${user.email}">邮箱</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex flex-wrap gap-1">
+                                        <span th:each="role : ${user.roles}" 
+                                              th:class="'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ' + 
+                                                       (${role.roleName == 'ADMIN'} ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800')"
+                                              th:text="${role.roleName}">角色</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span th:class="'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ' + 
+                                                   (${user.status == 1} ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800')"
+                                          th:text="${user.status == 1} ? '活跃' : '禁用'">状态</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <div th:if="${user.lastLoginTime}">
+                                        <div th:text="${#temporals.format(user.lastLoginTime, 'yyyy-MM-dd HH:mm')}">最后登录时间</div>
+                                        <div class="text-xs text-gray-400" th:text="${user.lastLoginIp}">IP地址</div>
+                                    </div>
+                                    <div th:unless="${user.lastLoginTime}" class="text-gray-400">从未登录</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div class="flex space-x-2">
+                                        <a th:href="@{/admin/users/{id}(id=${user.id})}" 
+                                           class="text-blue-600 hover:text-blue-900 transition-colors duration-200">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                            </svg>
+                                        </a>
+                                        <a th:href="@{/admin/users/{id}/edit(id=${user.id})}" 
+                                           class="text-green-600 hover:text-green-900 transition-colors duration-200">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                        </a>
+                                        <button onclick="toggleUserStatus(this)"
+                                                th:data-user-id="${user.id}"
+                                                th:data-user-status="${user.status}"
+                                                th:data-username="${user.username}"
+                                                th:class="${user.status == 1} ? 'text-yellow-600 hover:text-yellow-900' : 'text-green-600 hover:text-green-900'"
+                                                class="transition-colors duration-200 mr-2"
+                                                th:title="${user.status == 1} ? '禁用用户' : '启用用户'">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path th:if="${user.status == 1}" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"></path>
+                                                <path th:if="${user.status == 0}" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </button>
+                                        <button onclick="assignRoles(this)"
+                                                th:data-user-id="${user.id}"
+                                                th:data-username="${user.username}"
+                                                class="text-purple-600 hover:text-purple-900 transition-colors duration-200 mr-2"
+                                                title="分配角色">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                                            </svg>
+                                        </button>
+                                        <button onclick="resetPassword(this)"
+                                                th:data-user-id="${user.id}"
+                                                th:data-username="${user.username}"
+                                                class="text-orange-600 hover:text-orange-900 transition-colors duration-200 mr-2"
+                                                title="重置密码">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+                                            </svg>
+                                        </button>
+                                        <button th:if="${user.username != #authentication.name}"
+                                                onclick="confirmDelete(this)"
+                                                th:data-user-id="${user.id}"
+                                                th:data-username="${user.username}"
+                                                class="text-red-600 hover:text-red-900 transition-colors duration-200"
+                                                title="删除用户">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div th:if="${#lists.isEmpty(users)}" class="text-center py-12">
+                    <div class="text-gray-400 text-lg">暂无用户数据</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页面特定脚本 -->
+    <th:block layout:fragment="scripts">
+        <script>
+            // 删除用户
+            function confirmDelete(button) {
+                const userId = button.getAttribute('data-user-id');
+                const username = button.getAttribute('data-username');
+
+                if (confirm(`确定要删除用户 "${username}" 吗？此操作不可恢复！`)) {
+                    fetch(`/api/admin/users/${userId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('用户删除成功');
+                            location.reload();
+                        } else {
+                            alert('删除失败：' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('删除失败');
+                    });
+                }
+            }
+
+            // 切换用户状态
+            function toggleUserStatus(button) {
+                const userId = button.getAttribute('data-user-id');
+                const currentStatus = parseInt(button.getAttribute('data-user-status'));
+                const username = button.getAttribute('data-username');
+                const newStatus = currentStatus === 1 ? 0 : 1;
+                const action = newStatus === 1 ? '启用' : '禁用';
+
+                if (confirm(`确定要${action}用户 "${username}" 吗？`)) {
+                    fetch(`/api/admin/users/${userId}/status?status=${newStatus}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(`用户${action}成功`);
+                            location.reload();
+                        } else {
+                            alert(`${action}失败：` + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert(`${action}失败`);
+                    });
+                }
+            }
+
+            // 分配角色
+            function assignRoles(button) {
+                const userId = button.getAttribute('data-user-id');
+                const username = button.getAttribute('data-username');
+
+                // 这里可以打开一个模态框来选择角色
+                // 为了简化，这里直接跳转到用户详情页面
+                window.location.href = `/admin/users/${userId}`;
+            }
+
+            // 重置密码
+            function resetPassword(button) {
+                const userId = button.getAttribute('data-user-id');
+                const username = button.getAttribute('data-username');
+
+                const newPassword = prompt(`请输入用户 "${username}" 的新密码：`);
+                if (newPassword && newPassword.trim()) {
+                    if (newPassword.length < 6) {
+                        alert('密码长度不能少于6位');
+                        return;
+                    }
+
+                    if (confirm(`确定要重置用户 "${username}" 的密码吗？`)) {
+                        fetch(`/api/admin/users/${userId}/password?newPassword=${encodeURIComponent(newPassword)}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert('密码重置成功');
+                            } else {
+                                alert('重置失败：' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('重置失败');
+                        });
+                    }
+                }
+            }
+        </script>
+    </th:block>
+</body>
+</html>

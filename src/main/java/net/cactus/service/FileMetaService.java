@@ -12,11 +12,11 @@ public interface FileMetaService {
 
     FileMeta getInfo(String fileKey);
 
-    List<FileMeta> findByPage(int page, int size);
+    List<FileMeta> findByPage();
 
     int getTotalCount();
 
-    List<FileMeta> searchByPage(String keyword, int page, int size);
+    List<FileMeta> searchByPage(String keyword);
 
     int getSearchCount(String keyword);
 

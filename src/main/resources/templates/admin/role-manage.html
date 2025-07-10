@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN" 
+      xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/main}">
+
+<head>
+    <title layout:fragment="title">角色管理</title>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <!-- 页面标题 -->
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800 flex items-center">
+                        <span class="text-4xl mr-3">🔑</span>
+                        角色管理
+                    </h1>
+                    <p class="text-gray-600 mt-2">管理系统角色和权限配置</p>
+                </div>
+                <button onclick="showCreateRoleModal()" 
+                        class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg">
+                    <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    新增角色
+                </button>
+            </div>
+
+            <!-- 角色统计卡片 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                            <span class="text-2xl">🔐</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">总角色</h3>
+                            <p class="text-2xl font-bold text-blue-600" th:text="${#lists.size(roles)}">0</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                            <span class="text-2xl">✅</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">活跃角色</h3>
+                            <p class="text-2xl font-bold text-green-600" th:text="${#lists.size(roles.?[status == 1])}">0</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-4">
+                            <span class="text-2xl">❌</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">禁用角色</h3>
+                            <p class="text-2xl font-bold text-red-600" th:text="${#lists.size(roles.?[status == 0])}">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 角色列表 -->
+            <div class="bg-white rounded-xl shadow-lg border border-gray-100">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-xl font-semibold text-gray-800">角色列表</h2>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+                    <div th:each="role : ${roles}" class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-all duration-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center">
+                                <div th:class="'w-12 h-12 rounded-full flex items-center justify-center mr-4 ' + 
+                                              (${role.roleName == 'ADMIN'} ? 'bg-red-100' : 'bg-blue-100')">
+                                    <span th:class="'text-2xl ' + (${role.roleName == 'ADMIN'} ? 'text-red-600' : 'text-blue-600')"
+                                          th:text="${role.roleName == 'ADMIN'} ? '👑' : '👤'">🔑</span>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-800" th:text="${role.roleName}">角色名</h3>
+                                    <p class="text-sm text-gray-500" th:text="${role.description ?: '暂无描述'}">角色描述</p>
+                                </div>
+                            </div>
+                            <span th:class="'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ' + 
+                                           (${role.status == 1} ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800')"
+                                  th:text="${role.status == 1} ? '活跃' : '禁用'">状态</span>
+                        </div>
+                        
+                        <div class="space-y-2 mb-4">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">创建时间</span>
+                                <span class="text-gray-800" th:text="${#temporals.format(role.createTime, 'yyyy-MM-dd')}">创建时间</span>
+                            </div>
+                            <div th:if="${role.updateTime}" class="flex justify-between text-sm">
+                                <span class="text-gray-600">更新时间</span>
+                                <span class="text-gray-800" th:text="${#temporals.format(role.updateTime, 'yyyy-MM-dd')}">更新时间</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                            <button onclick="editRole(this)"
+                                    th:data-role-id="${role.id}"
+                                    th:data-role-name="${role.roleName}"
+                                    th:data-role-code="${role.roleCode}"
+                                    th:data-role-description="${role.description}"
+                                    th:data-role-status="${role.status}"
+                                    class="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200">
+                                编辑
+                            </button>
+                            <a th:href="@{'/admin/roles/' + ${role.id} + '/permissions'}"
+                               class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200">
+                                权限
+                            </a>
+                            <button th:if="${role.roleCode != 'ROLE_SUPER_ADMIN' and role.roleCode != 'ROLE_ADMIN'}"
+                                    onclick="confirmDeleteRole(this)"
+                                    th:data-role-id="${role.id}"
+                                    th:data-role-name="${role.roleName}"
+                                    class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200">
+                                删除
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div th:if="${#lists.isEmpty(roles)}" class="text-center py-12">
+                    <div class="text-gray-400 text-lg">暂无角色数据</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 创建/编辑角色模态框 -->
+        <div id="roleModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 id="modalTitle" class="text-lg font-semibold text-gray-800">新增角色</h3>
+                    <button onclick="closeRoleModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <form id="roleForm" onsubmit="submitRole(event)">
+                    <input type="hidden" id="roleId" name="id">
+                    
+                    <div class="mb-4">
+                        <label for="roleName" class="block text-sm font-medium text-gray-700 mb-2">角色名称</label>
+                        <input type="text" id="roleName" name="roleName" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="roleCode" class="block text-sm font-medium text-gray-700 mb-2">角色编码</label>
+                        <input type="text" id="roleCode" name="roleCode" required placeholder="ROLE_"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="roleDescription" class="block text-sm font-medium text-gray-700 mb-2">角色描述</label>
+                        <textarea id="roleDescription" name="description" rows="3"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label for="roleStatus" class="block text-sm font-medium text-gray-700 mb-2">状态</label>
+                        <select id="roleStatus" name="status"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="1">活跃</option>
+                            <option value="0">禁用</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex space-x-3">
+                        <button type="button" onclick="closeRoleModal()" 
+                                class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                            取消
+                        </button>
+                        <button type="submit" 
+                                class="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200">
+                            保存
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页面特定脚本 -->
+    <th:block layout:fragment="scripts">
+        <script>
+            function showCreateRoleModal() {
+                document.getElementById('modalTitle').textContent = '新增角色';
+                document.getElementById('roleForm').reset();
+                document.getElementById('roleId').value = '';
+                document.getElementById('roleModal').classList.remove('hidden');
+            }
+            
+            function editRole(button) {
+                const roleId = button.getAttribute('data-role-id');
+                const roleName = button.getAttribute('data-role-name');
+                const roleCode = button.getAttribute('data-role-code');
+                const roleDescription = button.getAttribute('data-role-description');
+                const roleStatus = button.getAttribute('data-role-status');
+
+                document.getElementById('modalTitle').textContent = '编辑角色';
+                document.getElementById('roleId').value = roleId;
+                document.getElementById('roleName').value = roleName;
+                document.getElementById('roleCode').value = roleCode;
+                document.getElementById('roleDescription').value = roleDescription || '';
+                document.getElementById('roleStatus').value = roleStatus;
+                document.getElementById('roleModal').classList.remove('hidden');
+            }
+            
+            function closeRoleModal() {
+                document.getElementById('roleModal').classList.add('hidden');
+            }
+            
+            function submitRole(event) {
+                event.preventDefault();
+
+                const formData = new FormData(event.target);
+                const data = {
+                    roleName: formData.get('roleName'),
+                    roleCode: formData.get('roleCode'),
+                    description: formData.get('description'),
+                    status: parseInt(formData.get('status'))
+                };
+
+                const roleId = document.getElementById('roleId').value;
+                const url = roleId ? `/api/admin/roles/${roleId}` : '/api/admin/roles';
+                const method = roleId ? 'PUT' : 'POST';
+
+                if (roleId) {
+                    data.id = parseInt(roleId);
+                }
+
+                fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(roleId ? '角色更新成功' : '角色创建成功');
+                        closeRoleModal();
+                        location.reload();
+                    } else {
+                        alert('操作失败：' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('操作失败');
+                });
+            }
+
+            function confirmDeleteRole(button) {
+                const roleId = button.getAttribute('data-role-id');
+                const roleName = button.getAttribute('data-role-name');
+
+                if (confirm(`确定要删除角色 "${roleName}" 吗？此操作不可恢复！`)) {
+                    fetch(`/api/admin/roles/${roleId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('角色删除成功');
+                            location.reload();
+                        } else {
+                            alert('删除失败：' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('删除失败');
+                    });
+                }
+            }
+            
+            // 点击模态框外部关闭
+            document.getElementById('roleModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeRoleModal();
+                }
+            });
+        </script>
+    </th:block>
+</body>
+</html>

@@ -34,6 +34,7 @@
 
     <!-- 监控相关版本 -->
     <skywalking.version>8.12.0</skywalking.version>
+    <oshi.version>6.4.8</oshi.version>
 
     <!-- Maven 插件版本 -->
     <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
@@ -64,6 +65,12 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-jetty</artifactId>
+    </dependency>
+
+    <!-- WebFlux for SSE -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-webflux</artifactId>
     </dependency>
 
     <!-- Thymeleaf Template Engine -->
@@ -100,6 +107,13 @@
       <groupId>org.mybatis.spring.boot</groupId>
       <artifactId>mybatis-spring-boot-starter</artifactId>
       <version>${mybatis-spring-boot.version}</version>
+    </dependency>
+
+    <!-- PageHelper for pagination -->
+    <dependency>
+      <groupId>com.github.pagehelper</groupId>
+      <artifactId>pagehelper-spring-boot-starter</artifactId>
+      <version>2.1.0</version>
     </dependency>
 
 
@@ -189,6 +203,13 @@
       <artifactId>hutool-poi</artifactId>
       <version>${hutool.version}</version>
     </dependency>
+
+    <!-- OSHI for system monitoring -->
+    <dependency>
+      <groupId>com.github.oshi</groupId>
+      <artifactId>oshi-core</artifactId>
+      <version>${oshi.version}</version>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
@@ -211,12 +232,6 @@
         <version>${exec-maven-plugin.version}</version>
         <configuration>
           <mainClass>net.cactus.FileServerApplication</mainClass>
-          <options>
-            <option>--add-opens</option>
-            <option>java.base/java.lang=ALL-UNNAMED</option>
-            <option>--add-opens</option>
-            <option>java.base/java.util=ALL-UNNAMED</option>
-          </options>
         </configuration>
       </plugin>
 

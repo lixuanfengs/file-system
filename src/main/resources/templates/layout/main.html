@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE">FileServer 文件管理系统</title>
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -31,243 +31,471 @@
             }
         }
     </script>
-    
+
     <!-- 自定义样式 -->
     <style>
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
         }
+
         @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
+
         @keyframes slideDown {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
+
         .drag-over {
             border-color: #3b82f6 !important;
             background-color: #eff6ff !important;
         }
+
         .progress-bar {
             transition: width 0.3s ease;
         }
+
         .nav-link {
             transition: all 0.3s ease;
         }
+
         .nav-link:hover {
             transform: translateY(-2px);
         }
+
         .nav-link.active {
             background: linear-gradient(135deg, #3b82f6, #1d4ed8);
             color: white;
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
         }
     </style>
-    
+
     <!-- 页面特定样式 -->
     <th:block layout:fragment="styles"></th:block>
 </head>
-<body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 min-h-screen">
-    <!-- 顶部导航栏 -->
-    <nav class="bg-white shadow-lg border-b border-gray-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="flex justify-between items-center h-16">
-                <!-- Logo 和标题 -->
-                <div class="flex items-center space-x-4">
-                    <div class="flex items-center">
-                        <span class="text-3xl">🚀</span>
-                        <h1 class="ml-3 text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                            FileServer
-                        </h1>
-                    </div>
-                    <div class="hidden md:block text-sm text-gray-500">
-                        文件管理系统
-                    </div>
+<body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 min-h-screen flex flex-col">
+<!-- 顶部导航栏 -->
+<nav class="bg-white shadow-lg border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="flex justify-between items-center h-16">
+            <!-- Logo 和标题 -->
+            <a th:href="@{/page/}" class="flex items-center space-x-4">
+                <div class="flex items-center">
+                    <span class="text-3xl">🚀</span>
+                    <h1 class="ml-3 text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        FileServer
+                    </h1>
                 </div>
-                
-                <!-- 导航菜单 -->
-                <div class="flex items-center space-x-2">
-                    <a th:href="@{/page/}"
-                       class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-blue-50">
+                <div class="hidden md:block text-sm text-gray-500">
+                    文件管理系统
+                </div>
+            </a>
+
+            <!-- 导航菜单 -->
+            <div class="flex items-center space-x-2">
+                <a th:href="@{/page/}"
+                   class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-blue-50">
                         <span class="flex items-center">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                             </svg>
                             文件上传
                         </span>
-                    </a>
+                </a>
 
-                    <a th:href="@{/page/file-list}"
-                       class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-blue-50">
+                <a th:href="@{/page/file-list}"
+                   class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-blue-50">
                         <span class="flex items-center">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                            文件列表
-                        </span>
-                    </a>
-
-                    <a th:href="@{/page/file-manage}"
-                       class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-blue-50">
-                        <span class="flex items-center">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M9 12h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                             </svg>
                             文件管理
                         </span>
-                    </a>
+                </a>
 
-                    <a th:href="@{/page/system-status}"
-                       class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-blue-50">
+                <a th:href="@{/page/system-status}"
+                   class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-blue-50">
                         <span class="flex items-center">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 00-2 2z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 00-2 2z"></path>
                             </svg>
                             系统状态
                         </span>
-                    </a>
-                </div>
-                
-                <!-- 用户信息和操作 -->
-                <div class="flex items-center space-x-4">
-                    <!-- 服务器信息 -->
-                    <div class="hidden lg:flex items-center text-sm text-gray-500">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"></path>
-                        </svg>
-                        <span th:text="${baseUrl}">http://localhost:9101</span>
+                </a>
+            </div>
+
+            <!-- 用户信息和操作 -->
+            <div class="flex items-center space-x-4">
+                <!-- 用户信息 -->
+                <div sec:authorize="isAuthenticated()" class="flex items-center space-x-3">
+                    <!-- 管理员菜单 -->
+                    <div sec:authorize="hasRole('ROLE_ADMIN') or hasRole('ROLE_SUPER_ADMIN')" class="relative">
+                        <button id="adminMenuBtn"
+                                class="flex items-center px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            <span class="hidden md:inline">管理</span>
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+
+                        <!-- 管理员下拉菜单 -->
+                        <div id="adminMenu"
+                             class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                            <div class="py-1">
+                                <a th:href="@{/admin/users}"
+                                   class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                                    </svg>
+                                    用户管理
+                                </a>
+                                <a th:href="@{/admin/roles}"
+                                   class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                    </svg>
+                                    角色管理
+                                </a>
+                                <a th:href="@{/admin/permissions}"
+                                   class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                    </svg>
+                                    权限管理
+                                </a>
+                                <a th:href="@{/admin/menus}"
+                                   class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                                    </svg>
+                                    菜单管理
+                                </a>
+                                <a th:href="@{/admin/statistics}"
+                                   class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 00-2 2z"></path>
+                                    </svg>
+                                    系统统计
+                                </a>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- 用户信息 -->
-                    <div sec:authorize="isAuthenticated()" class="flex items-center space-x-3">
-                        <!-- 用户头像和信息 -->
-                        <div class="flex items-center space-x-2">
+                    <!-- 用户下拉菜单 -->
+                    <div class="relative">
+                        <button id="userMenuBtn"
+                                class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
                             <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                                <span class="text-white text-sm font-semibold" sec:authentication="name" th:text="${#strings.substring(#authentication.name, 0, 1).toUpperCase()}">U</span>
+                                <span class="text-white text-sm font-semibold" sec:authentication="name"
+                                      th:text="${#strings.substring(#authentication.name, 0, 1).toUpperCase()}">U</span>
                             </div>
-                            <div class="hidden md:block">
+                            <div class="hidden md:block text-left">
                                 <div class="text-sm font-medium text-gray-700" sec:authentication="name">用户名</div>
                                 <div class="text-xs text-gray-500">在线</div>
                             </div>
-                        </div>
-
-                        <!-- 登出按钮 -->
-                        <form th:action="@{/logout}" method="post" class="inline">
-                            <button type="submit"
-                                    class="flex items-center px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-                                    title="退出登录">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                                </svg>
-                                <span class="hidden md:inline">退出</span>
-                            </button>
-                        </form>
-                    </div>
-
-                    <!-- 登录按钮（未登录时显示） -->
-                    <div sec:authorize="!isAuthenticated()">
-                        <a th:href="@{/login}"
-                           class="flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-sm font-medium rounded-lg transition-all duration-200 transform hover:scale-105 shadow-md">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M19 9l-7 7-7-7"></path>
                             </svg>
-                            登录
-                        </a>
+                        </button>
+
+                        <!-- 用户下拉菜单 -->
+                        <div id="userMenu"
+                             class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                            <div class="py-1">
+                                <div class="px-4 py-2 border-b border-gray-100">
+                                    <div class="text-sm font-medium text-gray-900" sec:authentication="name">用户名
+                                    </div>
+                                    <div class="text-xs text-gray-500">当前用户</div>
+                                </div>
+                                <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                    </svg>
+                                    个人资料
+                                </a>
+                                <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                    设置
+                                </a>
+                                <div class="border-t border-gray-100"></div>
+                                <form th:action="@{/logout}" method="post" class="block">
+                                    <button type="submit"
+                                            class="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                        <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                        </svg>
+                                        退出登录
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </nav>
 
-    <!-- 主要内容区域 -->
-    <main class="flex-1">
-        <div layout:fragment="content">
-            <!-- 页面内容将在这里渲染 -->
-        </div>
-    </main>
-
-    <!-- 页脚 -->
-    <footer class="bg-white border-t border-gray-200 mt-16">
-        <div class="max-w-7xl mx-auto px-6 py-8">
-            <div class="text-center">
-                <div class="flex items-center justify-center mb-4">
-                    <span class="text-2xl mr-3">🚀</span>
-                    <h3 class="text-lg font-semibold text-gray-800">FileServer</h3>
+                <!-- 登录按钮（未登录时显示） -->
+                <div sec:authorize="!isAuthenticated()">
+                    <a th:href="@{/login}"
+                       class="flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-sm font-medium rounded-lg transition-all duration-200 transform hover:scale-105 shadow-md">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                        </svg>
+                        登录
+                    </a>
                 </div>
-                <p class="text-gray-600 mb-2" th:text="${serverInfo}">FileServer v1.0</p>
-                <p class="text-sm text-gray-500">
-                    © 2025 FileServer - 基于 Spring Boot 3.x + JDK 17 + Jetty 构建
-                </p>
-                <p class="text-xs text-gray-400 mt-2">
-                    支持文件上传、下载、预览、删除等完整功能
-                </p>
             </div>
         </div>
-    </footer>
+    </div>
+</nav>
 
-    <!-- 全局 JavaScript -->
-    <script th:inline="javascript">
-        /*<![CDATA[*/
-        // 全局配置
-        window.FileServer = {
-            baseUrl: /*[[${baseUrl}]]*/ 'http://localhost:9101',
-            serverInfo: /*[[${serverInfo}]]*/ 'FileServer v1.0'
-        };
-        
-        // 通用工具函数
-        window.FileServerUtils = {
-            // 格式化文件大小
-            formatFileSize: function(bytes) {
-                if (bytes === 0) return '0 Bytes';
-                const k = 1024;
-                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-                const i = Math.floor(Math.log(bytes) / Math.log(k));
-                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-            },
-            
-            // 复制到剪贴板
-            copyToClipboard: async function(text) {
-                try {
-                    await navigator.clipboard.writeText(text);
-                    this.showToast('已复制到剪贴板', 'success');
-                } catch (err) {
-                    console.error('复制失败:', err);
-                    this.showToast('复制失败', 'error');
-                }
-            },
-            
-            // 显示提示消息
-            showToast: function(message, type = 'info') {
-                const toast = document.createElement('div');
-                const colors = {
-                    success: 'bg-green-500',
-                    error: 'bg-red-500',
-                    warning: 'bg-yellow-500',
-                    info: 'bg-blue-500'
-                };
-                
-                toast.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in`;
-                toast.textContent = message;
-                document.body.appendChild(toast);
-                
-                setTimeout(() => {
-                    toast.remove();
-                }, 3000);
-            },
-            
-            // 格式化日期时间
-            formatDateTime: function(dateString) {
-                const date = new Date(dateString);
-                return date.toLocaleString('zh-CN');
+<!-- 主要内容区域 -->
+<main class="flex-1 flex flex-col">
+    <div class="flex-1" layout:fragment="content">
+        <!-- 页面内容将在这里渲染 -->
+    </div>
+</main>
+
+<!-- 页脚 -->
+<footer class="bg-gradient-to-r from-gray-50 to-gray-100 border-t border-gray-200 mt-auto">
+    <div class="max-w-7xl mx-auto px-6 py-6">
+        <!-- 主要内容区域 -->
+        <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <!-- 左侧：品牌信息 -->
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+                    <span class="text-white text-sm font-bold">🚀</span>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        FileServer
+                    </h3>
+                    <p class="text-xs text-gray-500">现代化文件管理系统</p>
+                </div>
+            </div>
+
+            <!-- 中间：系统状态 -->
+            <div class="flex items-center space-x-6 text-sm text-gray-600">
+                <div class="flex items-center">
+                    <div class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                    <span>服务运行中</span>
+                </div>
+                <div class="hidden md:block w-px h-4 bg-gray-300"></div>
+                <div class="hidden md:flex items-center">
+                    <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span id="footerCurrentTime" class="text-xs">-</span>
+                </div>
+            </div>
+
+            <!-- 右侧：版权信息 -->
+            <div class="text-center md:text-right">
+                <p class="text-xs text-gray-500 mb-1">
+                    © 2025 FileServer. All rights reserved.
+                </p>
+                <div class="flex items-center justify-center md:justify-end space-x-2 text-xs text-gray-400">
+                    <span>安全</span>
+                    <div class="w-1 h-1 bg-gray-400 rounded-full"></div>
+                    <span>高效</span>
+                    <div class="w-1 h-1 bg-gray-400 rounded-full"></div>
+                    <span>可靠</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- 全局 JavaScript -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    // 全局配置
+    window.FileServer = {
+        baseUrl: /*[[${baseUrl}]]*/ 'http://localhost:9101',
+        serverInfo: /*[[${serverInfo}]]*/ 'FileServer v1.0'
+    };
+
+    // 通用工具函数
+    window.FileServerUtils = {
+        // 格式化文件大小
+        formatFileSize: function (bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        },
+
+        // 复制到剪贴板
+        copyToClipboard: async function (text) {
+            try {
+                await navigator.clipboard.writeText(text);
+                this.showToast('已复制到剪贴板', 'success');
+            } catch (err) {
+                console.error('复制失败:', err);
+                this.showToast('复制失败', 'error');
             }
-        };
-        /*]]>*/
-    </script>
-    
-    <!-- 页面特定脚本 -->
-    <th:block layout:fragment="scripts"></th:block>
+        },
+
+        // 显示提示消息
+        showToast: function (message, type = 'info') {
+            const toast = document.createElement('div');
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                warning: 'bg-yellow-500',
+                info: 'bg-blue-500'
+            };
+
+            toast.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        },
+
+        // 格式化日期时间
+        formatDateTime: function (dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleString('zh-CN');
+        }
+    };
+
+    // 页面加载完成后的初始化
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // 导航链接高亮
+        const currentPath = window.location.pathname;
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        navLinks.forEach(link => {
+            const href = link.getAttribute('href');
+            if (href && currentPath === href && href !== '/') {
+                link.classList.add('bg-blue-100', 'text-blue-700');
+            }
+        });
+
+        // 初始化下拉菜单
+        initDropdownMenus();
+
+        // 初始化页脚时间
+        updateFooterTime();
+        setInterval(updateFooterTime, 1000);
+    });
+
+    // 更新页脚时间
+    function updateFooterTime() {
+        const now = new Date();
+        const timeString = now.toLocaleString('zh-CN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+        const footerTimeElement = document.getElementById('footerCurrentTime');
+        if (footerTimeElement) {
+            footerTimeElement.textContent = timeString;
+        }
+    }
+
+    // 初始化下拉菜单
+    function initDropdownMenus() {
+        // 用户菜单
+        const userMenuBtn = document.getElementById('userMenuBtn');
+        const userMenu = document.getElementById('userMenu');
+
+        if (userMenuBtn && userMenu) {
+            userMenuBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                userMenu.classList.toggle('hidden');
+                // 关闭管理员菜单
+                const adminMenu = document.getElementById('adminMenu');
+                if (adminMenu) adminMenu.classList.add('hidden');
+            });
+        }
+
+        // 管理员菜单
+        const adminMenuBtn = document.getElementById('adminMenuBtn');
+        const adminMenu = document.getElementById('adminMenu');
+
+        if (adminMenuBtn && adminMenu) {
+            adminMenuBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                adminMenu.classList.toggle('hidden');
+                // 关闭用户菜单
+                if (userMenu) userMenu.classList.add('hidden');
+            });
+        }
+
+        // 点击外部关闭菜单
+        document.addEventListener('click', function () {
+            if (userMenu) userMenu.classList.add('hidden');
+            if (adminMenu) adminMenu.classList.add('hidden');
+        });
+
+        // 阻止菜单内部点击事件冒泡
+        if (userMenu) {
+            userMenu.addEventListener('click', function (e) {
+                e.stopPropagation();
+            });
+        }
+
+        if (adminMenu) {
+            adminMenu.addEventListener('click', function (e) {
+                e.stopPropagation();
+            });
+        }
+    }
+
+    /*]]>*/
+</script>
+
+<!-- 页面特定脚本 -->
+<th:block layout:fragment="scripts"></th:block>
 </body>
 </html>

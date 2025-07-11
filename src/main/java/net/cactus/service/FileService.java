@@ -17,9 +17,9 @@ public interface FileService {
 
     String saveFile(File file);
 
-    byte[] getFileThrougnBytes(String fileKey) throws IOException;
+    byte[] getFileThroughBytes(String fileKey) throws IOException;
 
-    void getFileThrouthStream(String fileKey, OutputStream output) throws Exception;
+    void getFileThroughStream(String fileKey, OutputStream output) throws Exception;
 
     FileMeta getFileInfo(String fileKey) throws Exception;
 

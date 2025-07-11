@@ -81,14 +81,16 @@ nohup soffice --headless --accept="socket,host=127.0.0.1,port=2002;urp;" --nofir
 ```
 
 ### 3. 配置文件
-修改 `application.yml` 中的数据库连接：
+修改 `application.yml` 中的数据库连接，推荐通过环境变量或独立的 `jdbc.properties` 提供凭证：
 ```yaml
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/fileserver
-    username: your_username
-    password: your_password
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
 ```
+
+如需使用文件方式配置，可在 `src/main/resources` 目录下创建 `jdbc.properties`，其中定义 `DB_USERNAME` 和 `DB_PASSWORD` 两个属性。
 
 ### 4. 运行应用
 ```bash

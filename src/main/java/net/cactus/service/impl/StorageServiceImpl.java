@@ -171,74 +171,30 @@ public class StorageServiceImpl extends AbstractService implements StorageServic
     }
 
     private void readFile(HttpServletResponse response, String filePath, String subfix, String key, String type) throws IOException {
-        OutputStream out = null;
-        FileInputStream in = null;
-        try {
-            try {
-                out = response.getOutputStream();
-                response.setStatus(200);
-                if (subfix.equalsIgnoreCase("jpg") || subfix.equalsIgnoreCase("jpeg") || subfix.equalsIgnoreCase("png") || subfix.equalsIgnoreCase("gif")) {
-                    response.setContentType("image/jpeg;charset=UTF-8");
-                } else if (subfix.equalsIgnoreCase("pdf")) {
-                    response.setContentType("application/pdf;charset=UTF-8");
-                }
-                if ("1".equals(type)) {
-                    in = FileUtils.openInputStream(Paths.get(filePath, new String[0]).toFile());
-                } else if ("2".equals(type)) {
-                    String path2 = filePath.replace(key, key + "_");
-                    in = FileUtils.openInputStream(Paths.get(path2, new String[0]).toFile());
-                }
-                FileChannel channel = in.getChannel();
-                ByteBuffer bf = ByteBuffer.allocate(2048);
-                while (true) {
-                    int length = channel.read(bf);
-                    if (length == -1) {
-                        break;
-                    }
-                    byte[] bytes = bf.array();
-                    out.write(bytes, 0, length);
-                    bf.clear();
-                }
-                out.flush();
+        response.setStatus(200);
+        if (subfix.equalsIgnoreCase("jpg") || subfix.equalsIgnoreCase("jpeg") || subfix.equalsIgnoreCase("png") || subfix.equalsIgnoreCase("gif")) {
+            response.setContentType("image/jpeg;charset=UTF-8");
+        } else if (subfix.equalsIgnoreCase("pdf")) {
+            response.setContentType("application/pdf;charset=UTF-8");
+        }
+
+        String targetPath = filePath;
+        if ("2".equals(type)) {
+            targetPath = filePath.replace(key, key + "_");
+        }
+
+        Path path = Paths.get(targetPath);
+
+        try (OutputStream out = response.getOutputStream();
+             FileInputStream in = FileUtils.openInputStream(path.toFile())) {
+            FileChannel channel = in.getChannel();
+            ByteBuffer bf = ByteBuffer.allocate(2048);
+            int length;
+            while ((length = channel.read(bf)) != -1) {
+                out.write(bf.array(), 0, length);
                 bf.clear();
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        return;
-                    }
-                }
-                if (out != null) {
-                    out.close();
-                }
-            } catch (IOException e2) {
-                e2.printStackTrace();
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (IOException e3) {
-                        e3.printStackTrace();
-                        return;
-                    }
-                }
-                if (out != null) {
-                    out.close();
-                }
             }
-        } catch (Throwable th) {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e4) {
-                    e4.printStackTrace();
-                    throw th;
-                }
-            }
-            if (out != null) {
-                out.close();
-            }
-            throw th;
+            out.flush();
         }
     }
 }

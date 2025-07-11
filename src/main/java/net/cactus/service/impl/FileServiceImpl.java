@@ -1,7 +1,6 @@
 package net.cactus.service.impl;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -49,15 +48,22 @@ public class FileServiceImpl extends AbstractService implements FileService {
     }
 
     @Override 
-    public byte[] getFileThrougnBytes(String fileKey) throws IOException {
+    public byte[] getFileThroughBytes(String fileKey) throws IOException {
         File file = this.storageService.getFileByKey(fileKey).toFile();
         return FileUtils.readFileToByteArray(file);
     }
 
-    @Override 
-    public void getFileThrouthStream(String uuid, OutputStream output) throws Exception {
+    @Override
+    public void getFileThroughStream(String uuid, OutputStream output) throws Exception {
         File file = this.storageService.getFileByKey(uuid).toFile();
-        new FileOutputStream(file);
+        try (InputStream in = FileUtils.openInputStream(file)) {
+            byte[] buffer = new byte[8192];
+            int len;
+            while ((len = in.read(buffer)) != -1) {
+                output.write(buffer, 0, len);
+            }
+            output.flush();
+        }
     }
 
     @Override 

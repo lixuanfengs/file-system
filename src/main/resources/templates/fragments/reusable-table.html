@@ -63,6 +63,8 @@
         </div>
     </div>
 
+    <!-- 文件预览功能已改为在新标签页中打开，移除了预览模态框 -->
+
     <!-- 表格容器 -->
     <div class="dynamic-table-container" th:id="${tableId + '-container'}" th:data-action-base-url="${actionBaseUrl}">
 
@@ -152,9 +154,10 @@
                     </td>
                     <td>
                         <div class="action-buttons">
-                            <a th:href="@{${actionBaseUrl} + '/viewFile/' + ${item.uuid}}"
-                               target="_blank"
-                               class="action-btn btn-preview">预览</a>
+                            <button th:data-action="'preview-file-' + ${tableId}"
+                                    th:data-uuid="${item.uuid}"
+                                    th:data-name="${item.filename}"
+                                    class="action-btn btn-preview">预览</button>
                             <a th:href="@{${actionBaseUrl} + '/' + ${item.uuid}}"
                                target="_blank"
                                class="action-btn btn-download">下载</a>

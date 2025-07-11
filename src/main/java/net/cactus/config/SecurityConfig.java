@@ -156,8 +156,13 @@ public class SecurityConfig {
                 .key("fileserver-remember-me")
                 .tokenValiditySeconds(7 * 24 * 60 * 60) // 7天
                 .userDetailsService(userService)
+            )
+
+            // 配置X-Frame-Options以允许预览功能在iframe中显示
+            .headers(headers -> headers
+                .frameOptions(frameOptions -> frameOptions.sameOrigin()) // 允许同源iframe
             );
-        
+
         return http.build();
     }
 

@@ -36,6 +36,14 @@
     <skywalking.version>8.12.0</skywalking.version>
     <oshi.version>6.4.8</oshi.version>
 
+    <!-- 分页相关版本 -->
+    <pagehelper.version>2.1.0</pagehelper.version>
+
+    <!-- 文档转换相关版本 -->
+    <jodconverter.version>4.4.9</jodconverter.version>
+    <pdfbox.version>2.0.29</pdfbox.version>
+    <commonmark.version>0.22.0</commonmark.version>
+
     <!-- Maven 插件版本 -->
     <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
     <exec-maven-plugin.version>3.3.0</exec-maven-plugin.version>
@@ -113,7 +121,7 @@
     <dependency>
       <groupId>com.github.pagehelper</groupId>
       <artifactId>pagehelper-spring-boot-starter</artifactId>
-      <version>2.1.0</version>
+      <version>${pagehelper.version}</version>
     </dependency>
 
 
@@ -188,13 +196,41 @@
       <version>${thumbnailator.version}</version>
     </dependency>
 
-    <!-- Office Document Processing -->
+    <!-- JODConverter for document conversion -->
+    <!-- https://mvnrepository.com/artifact/org.jodconverter/jodconverter-local -->
     <dependency>
-      <groupId>org.apache.poi</groupId>
-      <artifactId>poi-ooxml</artifactId>
-      <version>${poi.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
+      <groupId>org.jodconverter</groupId>
+      <artifactId>jodconverter-local</artifactId>
+      <version>${jodconverter.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jodconverter</groupId>
+      <artifactId>jodconverter-spring-boot-starter</artifactId>
+      <version>${jodconverter.version}</version>
+    </dependency>
+
+    <!-- Apache PDFBox for PDF processing (keep for PDF handling) -->
+    <dependency>
+      <groupId>org.apache.pdfbox</groupId>
+      <artifactId>pdfbox</artifactId>
+      <version>${pdfbox.version}</version>
+    </dependency>
+
+    <!-- CommonMark for Markdown processing (keep for Markdown) -->
+    <dependency>
+      <groupId>org.commonmark</groupId>
+      <artifactId>commonmark</artifactId>
+      <version>${commonmark.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.commonmark</groupId>
+      <artifactId>commonmark-ext-gfm-tables</artifactId>
+      <version>${commonmark.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.commonmark</groupId>
+      <artifactId>commonmark-ext-heading-anchor</artifactId>
+      <version>${commonmark.version}</version>
     </dependency>
 
     <!-- Hutool Utilities -->

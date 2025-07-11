@@ -55,6 +55,9 @@ class DynamicTable {
         // 获取动态元素
         this.elements.itemCheckboxes = this.elements.container.querySelectorAll('.file-item-checkbox');
         this.elements.deleteButtons = this.elements.container.querySelectorAll(`[data-action='delete-file-${tableId}']`);
+        this.elements.previewButtons = this.elements.container.querySelectorAll(`[data-action='preview-file-${tableId}']`);
+
+        // 预览相关元素（已移除iframe预览功能）
 
         if (this.elements.columnModal) {
             this.elements.columnCheckboxes = this.elements.columnModal.querySelectorAll('input[type="checkbox"]');
@@ -128,6 +131,16 @@ class DynamicTable {
             });
         });
 
+        // 预览按钮
+        elements.previewButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const { uuid, name } = e.currentTarget.dataset;
+                this.previewFile(uuid, name);
+            });
+        });
+
+        // 预览模态框相关功能已移除（改为新标签页打开）
+
         // 批量操作
         if (elements.batchDownloadBtn) {
             elements.batchDownloadBtn.addEventListener('click', () => this.batchDownload());
@@ -139,8 +152,10 @@ class DynamicTable {
 
         // ESC键关闭模态框
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && elements.columnModal && !elements.columnModal.classList.contains('hidden')) {
-                this.toggleColumnModal();
+            if (e.key === 'Escape') {
+                if (elements.columnModal && !elements.columnModal.classList.contains('hidden')) {
+                    this.toggleColumnModal();
+                }
             }
         });
     }
@@ -389,6 +404,44 @@ class DynamicTable {
             }, index * 500); // 延迟下载，避免浏览器阻止多个下载
         });
     }
+
+    /**
+     * 预览文件 - 在新标签页中打开
+     */
+    async previewFile(uuid, fileName) {
+        try {
+            // 构建预览URL
+            const previewUrl = `${this.getBaseUrl()}/file/preview/${encodeURIComponent(uuid)}`;
+
+            // 调试信息
+            console.log('在新标签页预览文件:', {
+                uuid: uuid,
+                fileName: fileName,
+                previewUrl: previewUrl
+            });
+
+            // 在新标签页中打开预览
+            const newWindow = window.open(previewUrl, '_blank');
+
+            if (!newWindow) {
+                this.showToast('无法打开新标签页，请检查浏览器弹窗设置', 'error');
+                return;
+            }
+
+            // 显示成功提示
+            this.showToast(`正在新标签页中预览: ${fileName}`, 'success');
+
+        } catch (error) {
+            console.error('Preview error:', error);
+            this.showToast('预览失败: ' + error.message, 'error');
+        }
+    }
+
+
+
+
+
+
 }
 
 /**

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+
+<head>
+    <title layout:fragment="title">文件预览测试</title>
+</head>
+
+<body>
+<div layout:fragment="content">
+    <div class="max-w-4xl mx-auto px-6 py-8">
+        <!-- 页面头部 -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">文件预览测试</h1>
+            <p class="text-gray-600 mt-2">测试文件预览功能</p>
+        </div>
+
+        <!-- 测试表单 -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">输入文件UUID进行预览测试</h2>
+            <div class="flex space-x-4">
+                <input type="text" 
+                       id="fileUuid" 
+                       placeholder="请输入文件UUID" 
+                       class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <button onclick="testPreview()" 
+                        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    测试预览
+                </button>
+                <button onclick="openInNewTab()" 
+                        class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                    新标签页打开
+                </button>
+            </div>
+        </div>
+
+        <!-- 预览区域 -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4">预览结果</h2>
+            <div id="previewContainer" class="border border-gray-300 rounded-lg p-8" style="height: 600px;">
+                <div id="previewPlaceholder" class="flex items-center justify-center h-full text-gray-500">
+                    <div class="text-center">
+                        <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                        </svg>
+                        <p class="mb-4">文件预览已改为在新标签页中打开</p>
+                        <p class="text-sm text-gray-400">点击"开始预览测试"按钮将在新标签页中打开预览</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 调试信息 -->
+        <div class="bg-gray-50 rounded-lg p-6 mt-6">
+            <h2 class="text-xl font-semibold mb-4">调试信息</h2>
+            <div id="debugInfo" class="text-sm text-gray-700 font-mono whitespace-pre-wrap">
+                等待测试...
+            </div>
+        </div>
+    </div>
+</div>
+
+<script layout:fragment="scripts">
+let currentPreviewUrl = null;
+
+function testPreview() {
+    const uuid = document.getElementById('fileUuid').value.trim();
+    if (!uuid) {
+        alert('请输入文件UUID');
+        return;
+    }
+
+    const baseUrl = window.location.origin;
+    const previewUrl = `${baseUrl}/file/preview/${encodeURIComponent(uuid)}`;
+    currentPreviewUrl = previewUrl;
+
+    // 显示调试信息
+    updateDebugInfo(`开始预览测试:
+UUID: ${uuid}
+预览URL: ${previewUrl}
+时间: ${new Date().toLocaleString()}
+状态: 在新标签页中打开预览...`);
+
+    // 在新标签页中打开预览
+    const newWindow = window.open(previewUrl, '_blank');
+
+    if (!newWindow) {
+        updateDebugInfo(`预览失败:
+UUID: ${uuid}
+预览URL: ${previewUrl}
+时间: ${new Date().toLocaleString()}
+状态: 无法打开新标签页
+可能原因: 浏览器阻止了弹窗，请检查浏览器设置`);
+        alert('无法打开新标签页，请检查浏览器弹窗设置');
+        return;
+    }
+
+    updateDebugInfo(`预览成功:
+UUID: ${uuid}
+预览URL: ${previewUrl}
+时间: ${new Date().toLocaleString()}
+状态: 已在新标签页中打开预览`);
+}
+
+function openInNewTab() {
+    if (currentPreviewUrl) {
+        window.open(currentPreviewUrl, '_blank');
+    } else {
+        alert('请先进行预览测试');
+    }
+}
+
+function updateDebugInfo(info) {
+    document.getElementById('debugInfo').textContent = info;
+}
+</script>
+
+</body>
+</html>

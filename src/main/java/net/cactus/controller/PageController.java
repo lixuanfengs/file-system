@@ -89,6 +89,18 @@ public class PageController {
     }
 
     /**
+     * 文件预览测试页面
+     *
+     * @param model 模型对象
+     * @return 模板名称
+     */
+    @GetMapping("/page/preview-test")
+    public String previewTest(Model model) {
+        addCommonAttributes(model);
+        return "pages/preview-test";
+    }
+
+    /**
      * 文件列表页面
      *
      * @param page 页码

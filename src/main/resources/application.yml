@@ -109,6 +109,14 @@ fileserver:
   filestore: ./filestore/
   serverhost: localhost
   serverport: 9100
+
+# JODConverter Configuration
+jodconverter:
+  remote:
+    enabled: true
+    #  local:
+    #   enabled: true  # 启用JODConverter
+  #  office-home: "C:\\Program Files\\LibreOffice"  # LibreOffice安装路径
   
 # Management Endpoints (for health check)
 management:
